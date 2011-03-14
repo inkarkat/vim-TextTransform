@@ -6,3 +6,11 @@ function! DoOX(str)
 endfunction
 call TextTransform#MapTransform('', '<Leader>sxo', 'DoXO')
 call TextTransform#MapTransform('', '<Leader>sox', 'DoOX', ['i"', "i'", 'lines'])
+
+function! MySelect()
+    execute "normal! F\"vf\"\<Esc>"
+    return 1
+endfunction
+call TextTransform#MapTransform('', '<Leader>soy', 'DoOX', function('MySelect'))
+
+call TextTransform#MapTransform('', '<Leader>soz', 'DoOX', [function('TextTransformSelections#QuotedInSingleLine'), 'lines'])
