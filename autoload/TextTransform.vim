@@ -24,7 +24,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 	let l:isTextObject = 0
 	if type(l:SelectionMode) == type(function('tr'))
 	    if call(l:SelectionMode, [])
-		echomsg '****' string(getpos("'<")) string(getpos("'>"))
+"****D echomsg '****' string(getpos("'<")) string(getpos("'>"))
 		silent normal! gvy
 	    endif
 	elseif l:SelectionMode ==# 'lines'
@@ -41,7 +41,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 	    let l:isTextObject = 1
 	    silent execute 'normal y' . (v:count ? v:count : '') . l:SelectionMode
 	endif
-	echomsg '****' string(l:SelectionMode) string(@@)
+"****D echomsg '****' string(l:SelectionMode) string(@@)
 	
 	if empty(@@)
 	    unlet l:SelectionMode
@@ -113,7 +113,7 @@ function! TextTransform#MapTransform(map_options, key, algorithm, ...)
 
     execute 'nmap ' . a:map_options . ' '.a:key.'  <Plug>unimpaired'.a:algorithm
     execute 'xmap ' . a:map_options . ' '.a:key.'  <Plug>unimpaired'.a:algorithm
-    let l:doubledKey = matchstr(a:key, '\(<\a\+>\|.\)$')
+    let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
     execute 'nmap ' . a:map_options . ' '.a:key.l:doubledKey.' <Plug>unimpairedLine'.a:algorithm
 endfunction
 
