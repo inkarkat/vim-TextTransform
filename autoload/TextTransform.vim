@@ -40,21 +40,21 @@ function! s:Transform( algorithm, selectionModes, onError )
 	if type(l:SelectionMode) == type(function('tr'))
 	    if call(l:SelectionMode, [])
 "****D echomsg '****' string(getpos("'<")) string(getpos("'>"))
-		silent normal! gvy
+		silent! normal! gvy
 	    endif
 	elseif l:SelectionMode ==# 'lines'
-	    silent execute 'normal! 0v' . v:count1 . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
+	    silent! execute 'normal! 0v' . v:count1 . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
 	elseif l:SelectionMode =~# '^.$'
-	    silent execute 'normal! `<' . l:SelectionMode . '`>y'
+	    silent! execute 'normal! `<' . l:SelectionMode . '`>y'
 	elseif l:SelectionMode ==# 'char'
-	    silent execute 'normal! `[v`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
+	    silent! execute 'normal! `[v`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	elseif l:SelectionMode ==# 'line'
-	    silent execute "normal! '[V']y"
+	    silent! execute "normal! '[V']y"
 	elseif l:SelectionMode ==# 'block'
-	    silent execute "normal! `[\<C-V>`]". (&selection ==# 'exclusive' ? 'l' : '') . 'y'
+	    silent! execute "normal! `[\<C-V>`]". (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	else
 	    let l:isTextObject = 1
-	    silent execute 'normal y' . (v:count ? v:count : '') . l:SelectionMode
+	    silent! execute 'normal y' . (v:count ? v:count : '') . l:SelectionMode
 	endif
 "****D echomsg '****' string(l:SelectionMode) string(@@)
 	
@@ -93,9 +93,9 @@ function! s:Transform( algorithm, selectionModes, onError )
 		" replace the text. 
 		call setpos('.', l:save_cursor)
 		silent execute 'normal "_d' . (v:count ? v:count : '') . l:SelectionMode
-		normal! P
+		silent normal! P
 	    else
-		normal! gvp
+		silent normal! gvp
 	    endif
 
 	    let l:isSuccess = 1
