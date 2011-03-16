@@ -7,9 +7,23 @@
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
-" REVISION    DATE        REMARKS 
-"	    001	    07-Mar-2011	file creation from plugin/unimpaired.vim
+" REVISION	DATE		REMARKS 
+"	002	16-Mar-2011	Fix off-by-one errors with some modes and
+"				'selection' settings. 
+"				FIX: Parsing for l:doubledKey now also accepts
+"				key modifiers like "<S-...>". 
+"	001	07-Mar-2011	file creation from plugin/unimpaired.vim
 
+function! s:Error( onError, errorText )
+    if a:onError ==# 'beep'
+	execute "normal \<Plug>RingTheBell" 
+    elseif a:onError ==# 'errmsg'
+	let v:errmsg = a:errorText
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    endif
+endfunction
 function! s:Transform( algorithm, selectionModes, onError )
     let l:save_view = winsaveview()
     let l:save_cursor = getpos('.')
@@ -18,6 +32,7 @@ function! s:Transform( algorithm, selectionModes, onError )
     let l:save_reg = getreg('"')
     let l:save_regmode = getregtype('"')
     let @@ = ''
+    let l:isSuccess = 0
 
     let l:selectionModes = type(a:selectionModes) == type([]) ? a:selectionModes : [a:selectionModes]
     for l:SelectionMode in l:selectionModes
@@ -48,22 +63,19 @@ function! s:Transform( algorithm, selectionModes, onError )
 
 	    " Reset the cursor; some selection modes depend on it. 
 	    call setpos('.', l:save_cursor)
-
-	    continue
+	else
+	    break
 	endif
+    endfor
 
+    if empty(@@)
+	call s:Error(a:onError, 'Not applicable here')
+    else
 	let l:yankMode = getregtype('"')
 	let l:transformedText = {a:algorithm}(@@)
 	if l:transformedText ==# @@
 	    call winrestview(l:save_view)
-	    if a:onError ==# 'beep'
-		execute "normal \<Plug>RingTheBell" 
-	    elseif a:onError ==# 'errmsg'
-		let v:errmsg = 'Nothing transformed'
-		echohl ErrorMsg
-		echomsg v:errmsg
-		echohl None
-	    endif
+	    call s:Error(a:onError, 'Nothing transformed')
 	else
 	    " When setting the register, also set the corresponding yank mode,
 	    " so that the actually yanked text is replaced (this is important
@@ -85,13 +97,15 @@ function! s:Transform( algorithm, selectionModes, onError )
 	    else
 		normal! gvp
 	    endif
+
+	    let l:isSuccess = 1
 	endif
-	break
-    endfor
+    endif
 
     call setreg('"', l:save_reg, l:save_regmode)
     let &clipboard = l:save_clipboard
 
+    return l:isSuccess
     " silent! call repeat#set("\<Plug>unimpairedLine".a:algorithm,a:selectionModes)
 endfunction
 
