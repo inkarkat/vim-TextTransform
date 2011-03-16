@@ -118,21 +118,44 @@ function! s:TransformSetup(algorithm)
     let &opfunc = 'TextTransform#TransformOpfunc'
 endfunction
 
-function! TextTransform#MapTransform(map_options, key, algorithm, ...)
-    execute 'nnoremap ' . a:map_options . ' <silent> <Plug>unimpaired'    .a:algorithm.' :<C-U>call <SID>TransformSetup("'.a:algorithm.'")<CR>g@'
-    execute 'xnoremap ' . a:map_options . ' <silent> <Plug>unimpaired'    .a:algorithm.' :<C-U>call <SID>Transform("'.a:algorithm.'",visualmode(), "beep")<CR>'
+function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
+    let l:plugLineMappingName = '<Plug>unimpaired' . a:algorithm . 'Line'
+    let l:plugOperatorMappingName = '<Plug>unimpaired' . a:algorithm . 'Operator'
 
+    " This mapping repeats naturally, because it just sets a global things, and
+    " Vim is able to repeat the g@ on its own. 
+    execute printf('nnoremap <silent> %s %s :<C-U>call <SID>TransformSetup(%s)<CR>g@',
+    \	a:mapArgs,
+    \	l:plugOperatorMappingName,
+    \	string(a:algorithm)
+    \)
+
+    " Repeat not defined in visual mode. 
+    execute printf('xnoremap <silent> %s %s :<C-U>call <SID>Transform(%s, visualmode(), "beep")<CR>',
+    \	a:mapArgs,
+    \	l:plugOperatorMappingName,
+    \	string(a:algorithm)
+    \)
+
+    " This mapping needs repeat.vim to be repeatable, because it contains of
+    " multiple steps (visual selection, "gv" and "p" commands inside
+    " s:Transform()). 
     let LineTypes = a:0 ? a:1 : 'lines'  
-    execute 'nnoremap ' . a:map_options . ' <silent> <Plug>unimpairedLine'.a:algorithm.' :<C-U>call <SID>Transform('.string(a:algorithm).','.string(LineTypes).', "beep")<CR>'
+    execute printf('nnoremap <silent> %s %s :<C-U>call <SID>Transform(%s, %s, "beep")' .
+    \	'<Bar>silent! call repeat#set("%s")<CR>',
+    \	a:mapArgs,
+    \	l:plugLineMappingName,
+    \	string(a:algorithm),
+    \	string(LineTypes),
+    \	substitute(l:plugLineMappingName, '<Plug>', '\\<Plug>', '')
+    \)
 
-    execute 'nmap ' . a:map_options . ' '.a:key.'  <Plug>unimpaired'.a:algorithm
-    execute 'xmap ' . a:map_options . ' '.a:key.'  <Plug>unimpaired'.a:algorithm
+
+    execute 'nmap' a:mapArgs a:key l:plugOperatorMappingName
+    execute 'xmap' a:mapArgs a:key l:plugOperatorMappingName
     let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
-    execute 'nmap ' . a:map_options . ' '.a:key.l:doubledKey.' <Plug>unimpairedLine'.a:algorithm
+    execute 'nmap' a:mapArgs a:key . l:doubledKey l:plugLineMappingName
 endfunction
-
-"call TextTransform#MapTransform('<buffer>', '[y', 'StringEncode')
-"call TextTransform#MapTransform('<buffer>', ']y', 'StringDecode')
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm )
     " TODO
