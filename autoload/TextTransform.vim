@@ -126,21 +126,20 @@ function! s:TransformLine( algorithm, selectionModes, repeatMapping )
 endfunction
 
 function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
-    let l:plugLineMappingName = '<Plug>unimpaired' . a:algorithm . 'Line'
-    let l:plugOperatorMappingName = '<Plug>unimpaired' . a:algorithm . 'Operator'
+    let l:plugMappingName = '<Plug>unimpaired' . a:algorithm
 
-    " This mapping repeats naturally, because it just sets a global things, and
+    " This mapping repeats naturally, because it just sets global things, and
     " Vim is able to repeat the g@ on its own. 
-    execute printf('nnoremap <silent> %s %s :<C-U>call <SID>TransformSetup(%s)<CR>g@',
+    execute printf('nnoremap <silent> %s %sOperator :<C-U>call <SID>TransformSetup(%s)<CR>g@',
     \	a:mapArgs,
-    \	l:plugOperatorMappingName,
+    \	l:plugMappingName,
     \	string(a:algorithm)
     \)
 
     " Repeat not defined in visual mode. 
-    execute printf('xnoremap <silent> %s %s :<C-U>call <SID>Transform(%s, visualmode(), "beep")<CR>',
+    execute printf('vnoremap <silent> %s %sVisual :<C-U>call <SID>Transform(%s, visualmode(), "beep")<CR>',
     \	a:mapArgs,
-    \	l:plugOperatorMappingName,
+    \	l:plugMappingName,
     \	string(a:algorithm)
     \)
 
@@ -148,19 +147,19 @@ function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     " multiple steps (visual selection, "gv" and "p" commands inside
     " s:Transform()). 
     let LineTypes = a:0 ? a:1 : 'lines'  
-    execute printf('nnoremap <silent> %s %s :<C-U>call <SID>TransformLine(%s, %s, %s)<CR>',
+    execute printf('nnoremap <silent> %s %sLine :<C-U>call <SID>TransformLine(%s, %s, %s)<CR>',
     \	a:mapArgs,
-    \	l:plugLineMappingName,
+    \	l:plugMappingName,
     \	string(a:algorithm),
     \	string(LineTypes),
-    \	string(l:plugLineMappingName)
+    \	string(l:plugMappingName)
     \)
 
 
-    execute 'nmap' a:mapArgs a:key l:plugOperatorMappingName
-    execute 'xmap' a:mapArgs a:key l:plugOperatorMappingName
+    execute 'nmap' a:mapArgs a:key l:plugMappingName . 'Operator'
+    execute 'xmap' a:mapArgs a:key l:plugMappingName . 'Visual'
     let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
-    execute 'nmap' a:mapArgs a:key . l:doubledKey l:plugLineMappingName
+    execute 'nmap' a:mapArgs a:key . l:doubledKey l:plugMappingName . 'Line'
 endfunction
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm )
