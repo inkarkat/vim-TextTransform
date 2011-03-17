@@ -118,6 +118,13 @@ function! s:TransformSetup(algorithm)
     let &opfunc = 'TextTransform#TransformOpfunc'
 endfunction
 
+function! s:TransformLine( algorithm, selectionModes, repeatMapping )
+    let l:count = v:count1
+    if s:Transform(a:algorithm, a:selectionModes, 'beep')
+	silent! call repeat#set(substitute(a:repeatMapping, '<Plug>', "\<Plug>", 'g'), l:count)
+    endif
+endfunction
+
 function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     let l:plugLineMappingName = '<Plug>unimpaired' . a:algorithm . 'Line'
     let l:plugOperatorMappingName = '<Plug>unimpaired' . a:algorithm . 'Operator'
@@ -141,13 +148,12 @@ function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     " multiple steps (visual selection, "gv" and "p" commands inside
     " s:Transform()). 
     let LineTypes = a:0 ? a:1 : 'lines'  
-    execute printf('nnoremap <silent> %s %s :<C-U>call <SID>Transform(%s, %s, "beep")' .
-    \	'<Bar>silent! call repeat#set("%s")<CR>',
+    execute printf('nnoremap <silent> %s %s :<C-U>call <SID>TransformLine(%s, %s, %s)<CR>',
     \	a:mapArgs,
     \	l:plugLineMappingName,
     \	string(a:algorithm),
     \	string(LineTypes),
-    \	substitute(l:plugLineMappingName, '<Plug>', '\\<Plug>', '')
+    \	string(l:plugLineMappingName)
     \)
 
 
