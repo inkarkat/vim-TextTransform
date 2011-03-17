@@ -106,53 +106,85 @@ function! s:Transform( algorithm, selectionModes, onError )
     let &clipboard = l:save_clipboard
 
     return l:isSuccess
-    " silent! call repeat#set("\<Plug>unimpairedLine".a:algorithm,a:selectionModes)
 endfunction
 
-function! TextTransform#TransformOpfunc(selectionMode)
-    return s:Transform(s:algorithm, a:selectionMode, 'beep')
-endfunction
-
-function! s:TransformSetup(algorithm)
+function! s:TransformSetup( algorithm, repeatMapping )
     let s:algorithm = a:algorithm
+    let s:repeatMapping = a:repeatMapping
     let &opfunc = 'TextTransform#TransformOpfunc'
+endfunction
+
+function! TextTransform#TransformOpfunc( selectionMode )
+    let l:count = v:count1
+    if s:Transform(s:algorithm, a:selectionMode, 'beep')
+	" This mapping repeats naturally, because it just sets global things,
+	" and Vim is able to repeat the g@ on its own. 
+	" But enable a repetition in visual mode through visualrepeat.vim. 
+	silent! call visualrepeat#set("\<Plug>" . s:repeatMapping . 'Visual', l:count)
+    endif
 endfunction
 
 function! s:TransformLine( algorithm, selectionModes, repeatMapping )
     let l:count = v:count1
     if s:Transform(a:algorithm, a:selectionModes, 'beep')
-	silent! call repeat#set(substitute(a:repeatMapping, '<Plug>', "\<Plug>", 'g'), l:count)
+	" This mapping needs repeat.vim to be repeatable, because it contains of
+	" multiple steps (visual selection, "gv" and "p" commands inside
+	" s:Transform()). 
+	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Line', l:count)
+	" Also enable a repetition in visual mode through visualrepeat.vim. 
+	silent! call visualrepeat#set_also("\<Plug>" . a:repeatMapping . 'Visual', l:count)
     endif
 endfunction
 
-function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
-    let l:plugMappingName = '<Plug>unimpaired' . a:algorithm
+function! s:TransformVisual( algorithm, repeatMapping )
+    let l:count = v:count1
+    if s:Transform(a:algorithm, visualmode(), 'beep')
+	" Make the visual mode mapping repeatable in normal mode, applying the
+	" previous visual mode transformation at the current cursor position,
+	" using the size of the last visual selection. 
+	" XXX: We cannot pass the count here, the <SID>Reselect "1v" would
+	" swallow that. 
+	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
+	" Also enable a repetition in visual mode through visualrepeat.vim. 
+	silent! call visualrepeat#set_also("\<Plug>" . a:repeatMapping . 'Visual', l:count)
+    endif
+endfunction
 
-    " This mapping repeats naturally, because it just sets global things, and
-    " Vim is able to repeat the g@ on its own. 
-    execute printf('nnoremap <silent> %s %sOperator :<C-U>call <SID>TransformSetup(%s)<CR>g@',
+nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
+function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
+    let l:mappingName = 'unimpaired' . a:algorithm
+    let l:plugMappingName = '<Plug>' . l:mappingName
+
+    execute printf('nnoremap <silent> %s %sOperator :<C-U>call <SID>TransformSetup(%s, %s)<CR>g@',
     \	a:mapArgs,
     \	l:plugMappingName,
-    \	string(a:algorithm)
+    \	string(a:algorithm),
+    \	string(l:mappingName)
     \)
 
     " Repeat not defined in visual mode. 
-    execute printf('vnoremap <silent> %s %sVisual :<C-U>call <SID>Transform(%s, visualmode(), "beep")<CR>',
+    execute printf('vnoremap <silent> %s <SID>%sVisual :<C-U>call <SID>TransformVisual(%s, %s)<CR>',
     \	a:mapArgs,
+    \	l:mappingName,
+    \	string(a:algorithm),
+    \	string(l:mappingName)
+    \)
+    execute printf('vnoremap <silent> <script> %sVisual <SID>%sVisual',
     \	l:plugMappingName,
-    \	string(a:algorithm)
+    \	l:mappingName
+    \)
+    execute printf('nnoremap <silent> <script> %sVisual <SID>Reselect<SID>%sVisual',
+    \	l:plugMappingName,
+    \	l:mappingName
     \)
 
-    " This mapping needs repeat.vim to be repeatable, because it contains of
-    " multiple steps (visual selection, "gv" and "p" commands inside
-    " s:Transform()). 
     let LineTypes = a:0 ? a:1 : 'lines'  
     execute printf('nnoremap <silent> %s %sLine :<C-U>call <SID>TransformLine(%s, %s, %s)<CR>',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	string(a:algorithm),
     \	string(LineTypes),
-    \	string(l:plugMappingName)
+    \	string(l:mappingName)
     \)
 
 
