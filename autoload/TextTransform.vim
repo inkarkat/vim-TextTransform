@@ -8,6 +8,11 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	003	25-Mar-2011	ENH: Use s:TransformExpression() instead of
+"				s:TransformSetup() to enable passing <count>
+"				before the operator-pending mapping. 
+"				Tighten pattern to detect visualmode() arguments
+"				in s:Transform(). 
 "	002	16-Mar-2011	Fix off-by-one errors with some modes and
 "				'selection' settings. 
 "				FIX: Parsing for l:doubledKey now also accepts
@@ -44,7 +49,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 	    endif
 	elseif l:SelectionMode ==# 'lines'
 	    silent! execute 'normal! 0v' . v:count1 . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
-	elseif l:SelectionMode =~# '^.$'
+	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
 	    silent! execute 'normal! `<' . l:SelectionMode . '`>y'
 	elseif l:SelectionMode ==# 'char'
 	    silent! execute 'normal! `[v`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
@@ -108,10 +113,11 @@ function! s:Transform( algorithm, selectionModes, onError )
     return l:isSuccess
 endfunction
 
-function! s:TransformSetup( algorithm, repeatMapping )
+function! s:TransformExpression( algorithm, repeatMapping )
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
     let &opfunc = 'TextTransform#TransformOpfunc'
+    return 'g@'
 endfunction
 
 function! TextTransform#TransformOpfunc( selectionMode )
@@ -142,8 +148,8 @@ function! s:TransformVisual( algorithm, repeatMapping )
 	" Make the visual mode mapping repeatable in normal mode, applying the
 	" previous visual mode transformation at the current cursor position,
 	" using the size of the last visual selection. 
-	" XXX: We cannot pass the count here, the <SID>Reselect "1v" would
-	" swallow that. 
+	" Note: We cannot pass the count here, the <SID>Reselect "1v" would
+	" swallow that. But what would a count mean in this case, anyway? 
 	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
 	" Also enable a repetition in visual mode through visualrepeat.vim. 
 	silent! call visualrepeat#set_also("\<Plug>" . a:repeatMapping . 'Visual', l:count)
@@ -156,7 +162,7 @@ function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     let l:plugMappingName = '<Plug>' . l:mappingName
     let l:noopModificationCheck = 'call setline(1, getline(1))<Bar>'
 
-    execute printf('nnoremap <silent> %s %sOperator :<C-u>call <SID>TransformSetup(%s, %s)<CR>g@',
+    execute printf('nnoremap <silent> <expr> %s %sOperator <SID>TransformExpression(%s, %s)',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	string(a:algorithm),
