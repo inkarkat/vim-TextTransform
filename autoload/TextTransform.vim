@@ -154,8 +154,9 @@ nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'ex
 function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     let l:mappingName = 'unimpaired' . a:algorithm
     let l:plugMappingName = '<Plug>' . l:mappingName
+    let l:noopModificationCheck = 'call setline(1, getline(1))<Bar>'
 
-    execute printf('nnoremap <silent> %s %sOperator :<C-U>call <SID>TransformSetup(%s, %s)<CR>g@',
+    execute printf('nnoremap <silent> %s %sOperator :<C-u>call <SID>TransformSetup(%s, %s)<CR>g@',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	string(a:algorithm),
@@ -163,9 +164,10 @@ function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     \)
 
     " Repeat not defined in visual mode. 
-    execute printf('vnoremap <silent> %s <SID>%sVisual :<C-U>call <SID>TransformVisual(%s, %s)<CR>',
+    execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall <SID>TransformVisual(%s, %s)<CR>',
     \	a:mapArgs,
     \	l:mappingName,
+    \	l:noopModificationCheck,
     \	string(a:algorithm),
     \	string(l:mappingName)
     \)
@@ -179,9 +181,10 @@ function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     \)
 
     let LineTypes = a:0 ? a:1 : 'lines'  
-    execute printf('nnoremap <silent> %s %sLine :<C-U>call <SID>TransformLine(%s, %s, %s)<CR>',
+    execute printf('nnoremap <silent> %s %sLine :<C-u>%scall <SID>TransformLine(%s, %s, %s)<CR>',
     \	a:mapArgs,
     \	l:plugMappingName,
+    \	l:noopModificationCheck,
     \	string(a:algorithm),
     \	string(LineTypes),
     \	string(l:mappingName)
