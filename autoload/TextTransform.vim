@@ -13,6 +13,8 @@
 "				before the operator-pending mapping. 
 "				Tighten pattern to detect visualmode() arguments
 "				in s:Transform(). 
+"				Implement TextTransform#MakeCommand() for
+"				linewise application of the algorithm. 
 "	002	16-Mar-2011	Fix off-by-one errors with some modes and
 "				'selection' settings. 
 "				FIX: Parsing for l:doubledKey now also accepts
@@ -36,7 +38,7 @@ function! s:Transform( algorithm, selectionModes, onError )
     set clipboard= " Avoid clobbering the selection and clipboard registers. 
     let l:save_reg = getreg('"')
     let l:save_regmode = getregtype('"')
-    let @@ = ''
+    let @" = ''
     let l:isSuccess = 0
 
     let l:selectionModes = type(a:selectionModes) == type([]) ? a:selectionModes : [a:selectionModes]
@@ -61,9 +63,9 @@ function! s:Transform( algorithm, selectionModes, onError )
 	    let l:isTextObject = 1
 	    silent! execute 'normal y' . (v:count ? v:count : '') . l:SelectionMode
 	endif
-"****D echomsg '****' string(l:SelectionMode) string(@@)
+"****D echomsg '****' string(l:SelectionMode) string(@")
 	
-	if empty(@@)
+	if empty(@")
 	    unlet l:SelectionMode
 
 	    " Reset the cursor; some selection modes depend on it. 
@@ -73,12 +75,12 @@ function! s:Transform( algorithm, selectionModes, onError )
 	endif
     endfor
 
-    if empty(@@)
+    if empty(@")
 	call s:Error(a:onError, 'Not applicable here')
     else
 	let l:yankMode = getregtype('"')
-	let l:transformedText = {a:algorithm}(@@)
-	if l:transformedText ==# @@
+	let l:transformedText = {a:algorithm}(@")
+	if l:transformedText ==# @"
 	    call winrestview(l:save_view)
 	    call s:Error(a:onError, 'Nothing transformed')
 	else
@@ -203,8 +205,49 @@ function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     execute 'nmap' a:mapArgs a:key . l:doubledKey l:plugMappingName . 'Line'
 endfunction
 
-function! TextTransform#MakeCommand( commandOptions, commandName, algorithm )
-    " TODO
+
+
+function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
+    let l:lastModifiedLine = 0
+    let l:modifiedLineCnt = 0
+    for l:i in range(a:firstLine, a:lastLine)
+	let l:text = getline(l:i)
+	let l:transformedText = {a:algorithm}(l:text)
+	if l:text !=# l:transformedText
+	    let l:lastModifiedLine = l:i
+	    let l:modifiedLineCnt += 1
+	    call setline(l:i, l:transformedText)
+	endif
+    endfor
+
+    if l:modifiedLineCnt > 0
+	execute 'normal!' l:lastModifiedLine . 'G^'
+	" Vim reports the change if more than one line is indented (unless 'report'
+	" is 0). 
+	if l:modifiedLineCnt > (&report == 0 ? 0 : 1)
+	    echo printf('Transformed %d line%s', l:modifiedLineCnt, (l:modifiedLineCnt == 1 ? '' : 's'))
+	endif
+    else
+	let v:errmsg = 'Nothing transformed'
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    endif
 endfunction
+"TODO function! s:TransformCommandWholeText( firstLine, lastLine, algorithm )
+function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
+    let l:options = (a:0 ? a:1 : {})
+    execute printf('command -bar %s %s %s call <SID>TransformCommand%s(<line1>, <line2>, %s)',
+    \	a:commandOptions,
+    \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
+    \	a:commandName,
+    \	(get(l:options, 'isProcessEntireText', 0) ? 'WholeText' : 'Linewise'),
+    \	string(a:algorithm)
+    \)
+endfunction
+
+"TODO: Command variant that uses s:Transform() and allows to operate on text
+" objects, motions, visual selection, ...
+"function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
 
 " vim: set sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
