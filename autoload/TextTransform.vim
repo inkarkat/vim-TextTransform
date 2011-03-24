@@ -31,6 +31,23 @@ function! s:Error( onError, errorText )
 	echohl None
     endif
 endfunction
+function! s:ApplyAlgorithm( algorithm, text )
+    try
+	return {a:algorithm}(a:text)
+    catch /^Vim\%((\a\+)\)\=:E/
+	" v:exception contains what is normally in v:errmsg, but with extra
+	" exception source info prepended, which we cut away. 
+	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    catch
+	let v:errmsg = 'TextTransform: ' . v:exception
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    endtry
+endfunction
 function! s:Transform( algorithm, selectionModes, onError )
     let l:save_view = winsaveview()
     let l:save_cursor = getpos('.')
@@ -79,7 +96,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 	call s:Error(a:onError, 'Not applicable here')
     else
 	let l:yankMode = getregtype('"')
-	let l:transformedText = {a:algorithm}(@")
+	let l:transformedText = s:ApplyAlgorithm(a:algorithm, @")
 	if l:transformedText ==# @"
 	    call winrestview(l:save_view)
 	    call s:Error(a:onError, 'Nothing transformed')
@@ -208,31 +225,45 @@ endfunction
 
 
 function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
-    let l:lastModifiedLine = 0
-    let l:modifiedLineCnt = 0
-    for l:i in range(a:firstLine, a:lastLine)
-	let l:text = getline(l:i)
-	let l:transformedText = {a:algorithm}(l:text)
-	if l:text !=# l:transformedText
-	    let l:lastModifiedLine = l:i
-	    let l:modifiedLineCnt += 1
-	    call setline(l:i, l:transformedText)
-	endif
-    endfor
+    try
+	let l:lastModifiedLine = 0
+	let l:modifiedLineCnt = 0
+	for l:i in range(a:firstLine, a:lastLine)
+	    let l:text = getline(l:i)
+	    let l:transformedText = {a:algorithm}(l:text)
+	    if l:text !=# l:transformedText
+		let l:lastModifiedLine = l:i
+		let l:modifiedLineCnt += 1
+		call setline(l:i, l:transformedText)
+	    endif
+	endfor
 
-    if l:modifiedLineCnt > 0
-	execute 'normal!' l:lastModifiedLine . 'G^'
-	" Vim reports the change if more than one line is indented (unless 'report'
-	" is 0). 
-	if l:modifiedLineCnt > (&report == 0 ? 0 : 1)
-	    echo printf('Transformed %d line%s', l:modifiedLineCnt, (l:modifiedLineCnt == 1 ? '' : 's'))
+	if l:modifiedLineCnt > 0
+	    execute 'normal!' l:lastModifiedLine . 'G^'
+	    " Vim reports the change if more than one line is indented (unless 'report'
+	    " is 0). 
+	    if l:modifiedLineCnt > (&report == 0 ? 0 : 1)
+		echo printf('Transformed %d line%s', l:modifiedLineCnt, (l:modifiedLineCnt == 1 ? '' : 's'))
+	    endif
+	else
+	    let v:errmsg = 'Nothing transformed'
+	    echohl ErrorMsg
+	    echomsg v:errmsg
+	    echohl None
 	endif
-    else
-	let v:errmsg = 'Nothing transformed'
+    catch /^Vim\%((\a\+)\)\=:E/
+	" v:exception contains what is normally in v:errmsg, but with extra
+	" exception source info prepended, which we cut away. 
+	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
 	echohl ErrorMsg
 	echomsg v:errmsg
 	echohl None
-    endif
+    catch
+	let v:errmsg = 'TextTransform: ' . v:exception
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    endtry
 endfunction
 "TODO function! s:TransformCommandWholeText( firstLine, lastLine, algorithm )
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
