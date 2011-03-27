@@ -1,6 +1,8 @@
 " TextTransform.vim: Text transformations extracted from unimpaired. 
 "
 " DEPENDENCIES:
+"   - vimscript #2136 repeat.vim autoload script (optional). 
+"   - visualrepeat.vim autoload script (optional). 
 "
 " Copyright: (C) 2011 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'. 
@@ -15,6 +17,9 @@
 "				in s:Transform(). 
 "				Implement TextTransform#MakeCommand() for
 "				linewise application of the algorithm. 
+"				ENH: Catch and report errors in algorithm. 
+"				ENH: Do not make the buffer modified if no
+"				transformation is done. 
 "	002	16-Mar-2011	Fix off-by-one errors with some modes and
 "				'selection' settings. 
 "				FIX: Parsing for l:doubledKey now also accepts
@@ -175,11 +180,20 @@ function! s:TransformVisual( algorithm, repeatMapping )
     endif
 endfunction
 
+function! s:Before()
+    let s:isModified = &l:modified
+endfunction
+function! s:After()
+    if ! s:isModified
+	setlocal nomodified
+    endif
+    unlet s:isModified
+endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
     let l:mappingName = 'unimpaired' . a:algorithm
     let l:plugMappingName = '<Plug>' . l:mappingName
-    let l:noopModificationCheck = 'call setline(1, getline(1))<Bar>'
+    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(1, getline(1))<Bar>call <SID>After()<Bar>'
 
     execute printf('nnoremap <silent> <expr> %s %sOperator <SID>TransformExpression(%s, %s)',
     \	a:mapArgs,
