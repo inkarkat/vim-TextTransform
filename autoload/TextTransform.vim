@@ -10,6 +10,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	005	29-Mar-2011	Rename TextTransform#MapTransform() to
+"				TextTransform#MakeMappings(). 
 "	004	28-Mar-2011	ENH: Allow use of funcref for a:algorithm in
 "				order to support script-local transformation
 "				functions. 
@@ -193,7 +195,7 @@ function! s:After()
     unlet s:isModified
 endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
-function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
+function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     " This will cause "E474: Invalid argument" if the mapping name gets too long. 
     let l:mappingName = 'unimpaired' . (
     \	type(a:algorithm) == type('') ?
