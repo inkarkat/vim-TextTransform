@@ -263,10 +263,16 @@ function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
 	endfor
 
 	if l:modifiedLineCnt > 0
+	    " Set change marks to the first columns of the range, like
+	    " :substitute does. 
+	    call setpos("'[", [0, a:firstLine, 1, 0])
+	    call setpos("']", [0, a:lastLine, 1, 0])
+
+	    " Move the cursor to the first non-blank character of the last
+	    " modified line, like :substitute does. 
 	    execute 'normal!' l:lastModifiedLine . 'G^'
-	    " Vim reports the change if more than one line is indented (unless 'report'
-	    " is 0). 
-	    if l:modifiedLineCnt > (&report == 0 ? 0 : 1)
+
+	    if l:modifiedLineCnt > &report
 		echo printf('Transformed %d line%s', l:modifiedLineCnt, (l:modifiedLineCnt == 1 ? '' : 's'))
 	    endif
 	else
@@ -289,7 +295,34 @@ function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
 	echohl None
     endtry
 endfunction
-"TODO function! s:TransformCommandWholeText( firstLine, lastLine, algorithm )
+function! s:TransformCommandWholeText( firstLine, lastLine, algorithm )
+    try
+	let l:lines = getline(a:firstLine, a:lastLine)
+	let l:text = join(l:lines, "\n")
+	let l:transformedText = call(a:algorithm, [l:text])
+	if l:text ==# l:transformedText
+	    let v:errmsg = 'Nothing transformed'
+	    echohl ErrorMsg
+	    echomsg v:errmsg
+	    echohl None
+	else
+	    execute a:firstLine . ',' . a:lastLine . 'delete _'
+	    execute (a:firstLine - 1) . 'put =l:transformedText'
+	endif
+    catch /^Vim\%((\a\+)\)\=:E/
+	" v:exception contains what is normally in v:errmsg, but with extra
+	" exception source info prepended, which we cut away. 
+	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    catch
+	let v:errmsg = 'TextTransform: ' . v:exception
+	echohl ErrorMsg
+	echomsg v:errmsg
+	echohl None
+    endtry
+endfunction
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
     execute printf('command -bar %s %s %s call <SID>TransformCommand%s(<line1>, <line2>, %s)',
