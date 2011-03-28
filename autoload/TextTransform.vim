@@ -10,6 +10,9 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	004	28-Mar-2011	ENH: Allow use of funcref for a:algorithm in
+"				order to support script-local transformation
+"				functions. 
 "	003	25-Mar-2011	ENH: Use s:TransformExpression() instead of
 "				s:TransformSetup() to enable passing <count>
 "				before the operator-pending mapping. 
@@ -38,7 +41,7 @@ function! s:Error( onError, errorText )
 endfunction
 function! s:ApplyAlgorithm( algorithm, text )
     try
-	return {a:algorithm}(a:text)
+	return call(a:algorithm, [a:text])
     catch /^Vim\%((\a\+)\)\=:E/
 	" v:exception contains what is normally in v:errmsg, but with extra
 	" exception source info prepended, which we cut away. 
@@ -191,7 +194,12 @@ function! s:After()
 endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MapTransform( mapArgs, key, algorithm, ... )
-    let l:mappingName = 'unimpaired' . a:algorithm
+    " This will cause "E474: Invalid argument" if the mapping name gets too long. 
+    let l:mappingName = 'unimpaired' . (
+    \	type(a:algorithm) == type('') ?
+    \	    a:algorithm :
+    \	    substitute(substitute(string(a:algorithm), '^function(''\(.*\)'')', '\1', ''), '<SNR>', '', 'g')
+    \)
     let l:plugMappingName = '<Plug>' . l:mappingName
     let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(1, getline(1))<Bar>call <SID>After()<Bar>'
 
@@ -244,7 +252,7 @@ function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
 	let l:modifiedLineCnt = 0
 	for l:i in range(a:firstLine, a:lastLine)
 	    let l:text = getline(l:i)
-	    let l:transformedText = {a:algorithm}(l:text)
+	    let l:transformedText = call(a:algorithm, [l:text])
 	    if l:text !=# l:transformedText
 		let l:lastModifiedLine = l:i
 		let l:modifiedLineCnt += 1
