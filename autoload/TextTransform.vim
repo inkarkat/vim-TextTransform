@@ -12,6 +12,11 @@
 " REVISION	DATE		REMARKS 
 "	005	29-Mar-2011	Rename TextTransform#MapTransform() to
 "				TextTransform#MakeMappings(). 
+"				Implement 'isProcessEntireText' option. 
+"				Factor out s:TransformCommand() function and
+"				make it delegate to the passed
+"				a:ProcessFunction, which is either
+"				s:TransformLinewise() or s:TransformWholeText(). 
 "	004	28-Mar-2011	ENH: Allow use of funcref for a:algorithm in
 "				order to support script-local transformation
 "				functions. 
@@ -248,19 +253,48 @@ endfunction
 
 
 
-function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
-    try
-	let l:lastModifiedLine = 0
-	let l:modifiedLineCnt = 0
+function! s:TransformLinewise( firstLine, lastLine, algorithm )
+    let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
+
+    for l:i in range(a:firstLine, a:lastLine)
+	let l:text = getline(l:i)
+	let l:transformedText = call(a:algorithm, [l:text])
+	if l:text !=# l:transformedText
+	    let l:lastModifiedLine = l:i
+	    let l:modifiedLineCnt += 1
+	    call setline(l:i, l:transformedText)
+	endif
+    endfor
+
+    return [l:lastModifiedLine, l:modifiedLineCnt]
+endfunction
+function! s:TransformWholeText( firstLine, lastLine, algorithm )
+    let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
+
+    let l:lines = getline(a:firstLine, a:lastLine)
+    let l:text = join(l:lines, "\n")
+    let l:transformedText = call(a:algorithm, [l:text])
+    if l:text !=# l:transformedText
+	silent execute a:firstLine . ',' . a:lastLine . 'delete _'
+	silent execute (a:firstLine - 1) . 'put =l:transformedText'
+
+	" In this process function, we don't get the modification data for free,
+	" we have to generate the data ourselves. Fortunately, we still have to
+	" original lines to compare with the changed buffer. 
 	for l:i in range(a:firstLine, a:lastLine)
-	    let l:text = getline(l:i)
-	    let l:transformedText = call(a:algorithm, [l:text])
-	    if l:text !=# l:transformedText
+	    if getline(l:i) !=# l:lines[l:i - a:firstLine]
 		let l:lastModifiedLine = l:i
 		let l:modifiedLineCnt += 1
-		call setline(l:i, l:transformedText)
 	    endif
 	endfor
+    endif
+
+    echomsg string( [l:lastModifiedLine, l:modifiedLineCnt])
+    return [l:lastModifiedLine, l:modifiedLineCnt]
+endfunction
+function! s:TransformCommand( firstLine, lastLine, algorithm, ProcessFunction )
+    try
+	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [a:firstLine, a:lastLine, a:algorithm])
 
 	if l:modifiedLineCnt > 0
 	    " Set change marks to the first columns of the range, like
@@ -295,42 +329,14 @@ function! s:TransformCommandLinewise( firstLine, lastLine, algorithm )
 	echohl None
     endtry
 endfunction
-function! s:TransformCommandWholeText( firstLine, lastLine, algorithm )
-    try
-	let l:lines = getline(a:firstLine, a:lastLine)
-	let l:text = join(l:lines, "\n")
-	let l:transformedText = call(a:algorithm, [l:text])
-	if l:text ==# l:transformedText
-	    let v:errmsg = 'Nothing transformed'
-	    echohl ErrorMsg
-	    echomsg v:errmsg
-	    echohl None
-	else
-	    execute a:firstLine . ',' . a:lastLine . 'delete _'
-	    execute (a:firstLine - 1) . 'put =l:transformedText'
-	endif
-    catch /^Vim\%((\a\+)\)\=:E/
-	" v:exception contains what is normally in v:errmsg, but with extra
-	" exception source info prepended, which we cut away. 
-	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
-	echohl ErrorMsg
-	echomsg v:errmsg
-	echohl None
-    catch
-	let v:errmsg = 'TextTransform: ' . v:exception
-	echohl ErrorMsg
-	echomsg v:errmsg
-	echohl None
-    endtry
-endfunction
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
-    execute printf('command -bar %s %s %s call <SID>TransformCommand%s(<line1>, <line2>, %s)',
+    execute printf('command -bar %s %s %s call <SID>TransformCommand(<line1>, <line2>, %s, %s)',
     \	a:commandOptions,
     \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
     \	a:commandName,
-    \	(get(l:options, 'isProcessEntireText', 0) ? 'WholeText' : 'Linewise'),
-    \	string(a:algorithm)
+    \	string(a:algorithm),
+    \	string('s:Transform' . (get(l:options, 'isProcessEntireText', 0) ? 'WholeText' : 'Linewise'))
     \)
 endfunction
 
