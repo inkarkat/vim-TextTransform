@@ -1,4 +1,4 @@
-" TextTransform.vim: Text transformations extracted from unimpaired. 
+" TextTransform.vim: Create text transformation mappings and commands. 
 "
 " DEPENDENCIES:
 "   - TextTransform#Arbitrary.vim autoload script. 
@@ -6,10 +6,20 @@
 "
 " Copyright: (C) 2011 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'. 
+"   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
+"   by Tim Pope. 
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	007	05-Apr-2011	Add TextTransform#MakeSelectionCommand() command
+"				variant that uses s:Transform() and allows to
+"				operate on text objects, motions, visual
+"				selection, ...
+"				Replace "unimpaired" prefix with "TextT" to
+"				remove the last remnant of the original
+"				unimpaired.vim script and make this fully
+"				independent. 
 "	006	05-Apr-2011	Limit the amount of script that gets sourced
 "				when commands / mappings are defined during Vim
 "				startup: 
@@ -55,7 +65,7 @@ endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     " This will cause "E474: Invalid argument" if the mapping name gets too long. 
-    let l:mappingName = 'unimpaired' . (
+    let l:mappingName = 'TextT' . (
     \	type(a:algorithm) == type('') ?
     \	    a:algorithm :
     \	    substitute(substitute(string(a:algorithm), '^function(''\(.*\)'')', '\1', ''), '<SNR>', '', 'g')
@@ -116,9 +126,14 @@ function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ...
     \)
 endfunction
 
-"TODO: Command variant that uses s:Transform() and allows to operate on text
-" objects, motions, visual selection, ...
+
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
+    execute printf('command -bar -count %s %s call TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s)',
+    \	a:commandOptions,
+    \	a:commandName,
+    \	string(a:algorithm),
+    \	string(a:selectionModes)
+    \)
 endfunction
 
 " vim: set sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
