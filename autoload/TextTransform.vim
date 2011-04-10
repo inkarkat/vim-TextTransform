@@ -101,13 +101,13 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \	l:mappingName
     \)
 
-    let LineTypes = a:0 ? a:1 : 'lines'  
+    let l:selectionModes = a:0 ? a:1 : 'lines'  
     execute printf('nnoremap <silent> %s %sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s)<CR>',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	l:noopModificationCheck,
     \	string(a:algorithm),
-    \	string(LineTypes),
+    \	string(l:selectionModes),
     \	string(l:mappingName)
     \)
 
