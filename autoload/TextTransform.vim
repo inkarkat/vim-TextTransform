@@ -12,6 +12,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	008	10-Apr-2011	Define commands with bang; otherwise,
+"				buffer-local commands defined by ftplugins will
+"				cause errors when the filetype changes (to one
+"				that defines the same commands). 
 "	007	05-Apr-2011	Add TextTransform#MakeSelectionCommand() command
 "				variant that uses s:Transform() and allows to
 "				operate on text objects, motions, visual
@@ -108,6 +112,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \)
 
 
+    " TODO: Check for existence of mapping and then skip this.  
     execute 'nmap' a:mapArgs a:key l:plugMappingName . 'Operator'
     execute 'xmap' a:mapArgs a:key l:plugMappingName . 'Visual'
     let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
@@ -117,7 +122,7 @@ endfunction
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
-    execute printf('command -bar %s %s %s call TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s)',
+    execute printf('command! -bar %s %s %s call TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s)',
     \	a:commandOptions,
     \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
     \	a:commandName,
