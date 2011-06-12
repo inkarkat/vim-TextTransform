@@ -1,4 +1,4 @@
-" TextTransform.vim: Text transformations extracted from unimpaired. 
+" TextTransform.vim: Create text transformation mappings and commands. 
 "
 " DEPENDENCIES:
 "   - vimscript #2136 repeat.vim autoload script (optional). 
@@ -6,10 +6,13 @@
 "
 " Copyright: (C) 2011 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'. 
+"   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
+"   by Tim Pope. 
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	002	05-Apr-2011	Implement TextTransform#Arbitrary#Command(). 
 "	001	05-Apr-2011	file creation from autoload/TextTransform.vim. 
 
 function! s:Error( onError, errorText )
@@ -39,7 +42,7 @@ function! s:ApplyAlgorithm( algorithm, text )
 	echohl None
     endtry
 endfunction
-function! s:Transform( algorithm, selectionModes, onError )
+function! s:Transform( count, algorithm, selectionModes, onError )
     let l:save_view = winsaveview()
     let l:save_cursor = getpos('.')
     let l:save_clipboard = &clipboard
@@ -48,6 +51,7 @@ function! s:Transform( algorithm, selectionModes, onError )
     let l:save_regmode = getregtype('"')
     let @" = ''
     let l:isSuccess = 0
+    let l:count = (a:count ? a:count : '')
 
     let l:selectionModes = type(a:selectionModes) == type([]) ? a:selectionModes : [a:selectionModes]
     for l:SelectionMode in l:selectionModes
@@ -58,7 +62,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 		silent! normal! gvy
 	    endif
 	elseif l:SelectionMode ==# 'lines'
-	    silent! execute 'normal! 0v' . v:count1 . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
+	    silent! execute 'normal! 0v' . l:count . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
 	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
 	    silent! execute 'normal! `<' . l:SelectionMode . '`>y'
 	elseif l:SelectionMode ==# 'char'
@@ -69,7 +73,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 	    silent! execute "normal! `[\<C-V>`]". (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	else
 	    let l:isTextObject = 1
-	    silent! execute 'normal y' . (v:count ? v:count : '') . l:SelectionMode
+	    silent! execute 'normal y' . l:count . l:SelectionMode
 	endif
 "****D echomsg '****' string(l:SelectionMode) string(@")
 	
@@ -107,7 +111,7 @@ function! s:Transform( algorithm, selectionModes, onError )
 		" re-execute the text object (at the original position) to
 		" replace the text. 
 		call setpos('.', l:save_cursor)
-		silent execute 'normal "_d' . (v:count ? v:count : '') . l:SelectionMode
+		silent execute 'normal "_d' . l:count . l:SelectionMode
 		silent normal! P
 	    else
 		silent normal! gvp
@@ -132,7 +136,7 @@ endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
     let l:count = v:count1
-    if s:Transform(s:algorithm, a:selectionMode, 'beep')
+    if s:Transform(v:count, s:algorithm, a:selectionMode, 'beep')
 	" This mapping repeats naturally, because it just sets global things,
 	" and Vim is able to repeat the g@ on its own. 
 	" But enable a repetition in visual mode through visualrepeat.vim. 
@@ -142,7 +146,7 @@ endfunction
 
 function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping )
     let l:count = v:count1
-    if s:Transform(a:algorithm, a:selectionModes, 'beep')
+    if s:Transform(v:count, a:algorithm, a:selectionModes, 'beep')
 	" This mapping needs repeat.vim to be repeatable, because it contains of
 	" multiple steps (visual selection, "gv" and "p" commands inside
 	" s:Transform()). 
@@ -154,7 +158,7 @@ endfunction
 
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
     let l:count = v:count1
-    if s:Transform(a:algorithm, visualmode(), 'beep')
+    if s:Transform(v:count, a:algorithm, visualmode(), 'beep')
 	" Make the visual mode mapping repeatable in normal mode, applying the
 	" previous visual mode transformation at the current cursor position,
 	" using the size of the last visual selection. 
@@ -164,6 +168,15 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
 	" Also enable a repetition in visual mode through visualrepeat.vim. 
 	silent! call visualrepeat#set_also("\<Plug>" . a:repeatMapping . 'Visual', l:count)
     endif
+endfunction
+
+function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm, selectionModes )
+    let l:selectionMode = a:selectionModes
+    if a:firstLine == line("'<") && a:lastLine == line("'>")
+	let l:selectionMode = visualmode()
+    endif
+
+    call s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg')
 endfunction
 
 " vim: set sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
