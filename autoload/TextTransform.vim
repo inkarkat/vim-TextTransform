@@ -12,6 +12,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	009	11-Apr-2011	Implement customization of mappings (by having
+"				mappings to the <Plug>-mappings) and no custom
+"				mappings (by passing an empty a:key), just the
+"				<Plug>-mappings. 
 "	008	10-Apr-2011	Define commands with bang; otherwise,
 "				buffer-local commands defined by ftplugins will
 "				cause errors when the filetype changes (to one
@@ -112,11 +116,25 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \)
 
 
-    " TODO: Check for existence of mapping and then skip this.  
-    execute 'nmap' a:mapArgs a:key l:plugMappingName . 'Operator'
-    execute 'xmap' a:mapArgs a:key l:plugMappingName . 'Visual'
-    let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
-    execute 'nmap' a:mapArgs a:key . l:doubledKey l:plugMappingName . 'Line'
+    if empty(a:key)
+	return
+    endif
+
+    let l:operatorPlugMappingName = l:plugMappingName . 'Operator'
+    if ! hasmapto(l:operatorPlugMappingName, 'n')
+	execute 'nmap' a:mapArgs a:key l:operatorPlugMappingName
+    endif
+
+    let l:visualPlugMappingName = l:plugMappingName . 'Visual'
+    if ! hasmapto(l:visualPlugMappingName, 'x')
+	execute 'xmap' a:mapArgs a:key l:visualPlugMappingName
+    endif
+
+    let l:linePlugMappingName = l:plugMappingName . 'Line'
+    if ! hasmapto(l:linePlugMappingName, 'n')
+	let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
+	execute 'nmap' a:mapArgs a:key . l:doubledKey l:linePlugMappingName
+    endif
 endfunction
 
 
