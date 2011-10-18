@@ -39,7 +39,7 @@ RELATED WORKS								     *
 USAGE							 *TextTransform-usage*
 
 						*TextTransform#MakeMappings()*
-TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{lineTypes}] )
+TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 
 			Create normal and visual mode mappings that apply
 			{algorithm} to the text covered by {motion}, [count]
@@ -52,6 +52,17 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{lineTypes}] )
 			- {Visual}<Leader>xy	applies to visual selection
 			For the linewise normal mode mapping, the last
 			character of {key} is doubled, as is customary in Vim. 
+
+			When {key} is empty, only <Plug> mappings are created;
+			mappings are also skipped when there are existing
+			mappings to the <Plug> mappings. When {algorithm} is
+			"MyTransform", the following <Plug> mappings are
+			generated: >
+			    nmap <Plug>TextTMyTransformOperator
+			    nmap <Plug>TextTMyTransformLine
+			    vmap <Plug>TextTMyTransformVisual
+<			Use this to selectively override or disable individual
+			mappings. 
 
 			|:map-arguments| can be passed in {mapArgs}, e.g.
 			"<buffer>" to make the generated mappings
@@ -76,12 +87,12 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{lineTypes}] )
 			often faster than <Leader>xy{motion} or first doing a
 			visual selection, and is easiest to commit to muscle
 			memory, so it should "do what I mean". 
-						     *TextTransform-lineTypes*
-			The optional {lineTypes} argument is a single text
-			object (such as "aw"), motion (e.g. "$"), or the
+						*TextTransform-selectionModes*
+			The optional {selectionModes} argument is a single
+			text object (such as "aw"), motion (e.g. "$"), or the
 			string "lines", which represents the default behavior.
 			If you pass a list of these, TextTransform tries each
-			lineType, one after the other, until one captures
+			selectionMode, one after the other, until one captures
 			non-empty text. For example, the passed list ['i"',
 			"i'", "lines"] will cause TextTransform to first try
 			to capture the text inside double quotes, then fall
@@ -116,12 +127,12 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm}, [{optio
 			lines. 
 
 					*TextTransform#MakeSelectionCommand()*
-TextTransform#MakeSelectionCommand( {commandOptions}, {commandName}, {algorithm}, {lineTypes} )
+TextTransform#MakeSelectionCommand( {commandOptions}, {commandName}, {algorithm}, {selectionModes} )
 
 			Create a custom command {commandName} that applies
-			{algorithm} on the |TextTransform-lineTypes| specified
-			by {lineTypes}, or the current visual selection (when
-			invoked from visual mode). 
+			{algorithm} on the |TextTransform-selectionModes|
+			specified by {selectionModes}, or the current visual
+			selection (when invoked from visual mode). 
 			This is useful for algorithms that do not make sense
 			on entire lines. It's the command-variant of the
 			line-based mapping created by
