@@ -12,6 +12,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	010	19-Oct-2011	BUG: Variable rename from LineTypes to
+"				l:selectionModes broke Funcref arguments; my
+"				test suite would have caught this, if only I had
+"				run it :-) 
 "	009	11-Apr-2011	Implement customization of mappings (by having
 "				mappings to the <Plug>-mappings) and no custom
 "				mappings (by passing an empty a:key), just the
@@ -105,13 +109,13 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \	l:mappingName
     \)
 
-    let l:selectionModes = a:0 ? a:1 : 'lines'  
+    let l:SelectionModes = a:0 ? a:1 : 'lines'  
     execute printf('nnoremap <silent> %s %sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s)<CR>',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	l:noopModificationCheck,
     \	string(a:algorithm),
-    \	string(l:selectionModes),
+    \	string(l:SelectionModes),
     \	string(l:mappingName)
     \)
 
