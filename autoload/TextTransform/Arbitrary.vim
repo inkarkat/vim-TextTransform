@@ -12,12 +12,14 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	003	13-Jun-2011	FIX: Directly ring the bell to avoid problems
+"				when running under :silent!. 
 "	002	05-Apr-2011	Implement TextTransform#Arbitrary#Command(). 
 "	001	05-Apr-2011	file creation from autoload/TextTransform.vim. 
 
 function! s:Error( onError, errorText )
     if a:onError ==# 'beep'
-	execute "normal \<Plug>RingTheBell" 
+	execute "normal! \<C-\>\<C-n>\<Esc>"
     elseif a:onError ==# 'errmsg'
 	let v:errmsg = a:errorText
 	echohl ErrorMsg
