@@ -181,4 +181,4 @@ function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm
     call s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg')
 endfunction
 
-" vim: set sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
+" vim: set ts=8 sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
