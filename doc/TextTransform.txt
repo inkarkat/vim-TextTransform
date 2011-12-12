@@ -89,8 +89,9 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 			memory, so it should "do what I mean". 
 						*TextTransform-selectionModes*
 			The optional {selectionModes} argument is a single
-			text object (such as "aw"), motion (e.g. "$"), or the
-			string "lines", which represents the default behavior.
+			text object (such as "aw"), motion (e.g. "$"),
+			|Funcref| (for a custom selection), or the string
+			"lines", which represents the default behavior.
 			If you pass a list of these, TextTransform tries each
 			selectionMode, one after the other, until one captures
 			non-empty text. For example, the passed list ['i"',
@@ -100,7 +101,16 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 			doesn't yield any text. Finally, the "lines" will
 			transform the entire line if the single quote capture
 			failed, too. 
-
+			A custom function should create a visual selection and
+			return a non-zero value if the selection can be made.
+			(Otherwise, the next selectionMode in the list is
+			tried.) Here's a senseless example which selects
+			[count] characters to the right of the cursor: >
+			    function! MySelect()
+				execute 'normal! lv' . v:count1 . "l\<Esc>"
+				return 1
+			    endfunction
+<
 						 *TextTransform#MakeCommand()*
 TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm}, [{options}] )
 
