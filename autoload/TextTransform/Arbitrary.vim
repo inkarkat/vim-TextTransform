@@ -12,6 +12,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	004	06-Dec-2011	Retire visualrepeat#set_also(); use
+"				visualrepeat#set() everywhere. 
 "	003	13-Jun-2011	FIX: Directly ring the bell to avoid problems
 "				when running under :silent!. 
 "	002	05-Apr-2011	Implement TextTransform#Arbitrary#Command(). 
@@ -154,7 +156,7 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
 	" s:Transform()). 
 	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Line', l:count)
 	" Also enable a repetition in visual mode through visualrepeat.vim. 
-	silent! call visualrepeat#set_also("\<Plug>" . a:repeatMapping . 'Visual', l:count)
+	silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
     endif
 endfunction
 
@@ -168,7 +170,7 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
 	" swallow that. But what would a count mean in this case, anyway? 
 	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
 	" Also enable a repetition in visual mode through visualrepeat.vim. 
-	silent! call visualrepeat#set_also("\<Plug>" . a:repeatMapping . 'Visual', l:count)
+	silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
     endif
 endfunction
 
