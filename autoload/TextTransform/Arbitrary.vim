@@ -1,4 +1,6 @@
-" TextTransform.vim: Create text transformation mappings and commands. 
+" TextTransform/Arbitrary.vim: Text transformation on any text selection.
+"
+" This module is responsible for the transformation triggered by mappings.
 "
 " DEPENDENCIES:
 "   - vimscript #2136 repeat.vim autoload script (optional). 
@@ -131,16 +133,17 @@ function! s:Transform( count, algorithm, selectionModes, onError )
     return l:isSuccess
 endfunction
 
-function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
+function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping, isRepeat )
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
+    let s:isRepeat = a:isRepeat
     let &opfunc = 'TextTransform#Arbitrary#Opfunc'
     return 'g@'
 endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
     let l:count = v:count1
-    if s:Transform(v:count, s:algorithm, a:selectionMode, 'beep')
+    if s:Transform(v:count, s:algorithm, a:selectionMode, 'beep') || s:isRepeat
 	" This mapping repeats naturally, because it just sets global things,
 	" and Vim is able to repeat the g@ on its own. 
 	" But enable a repetition in visual mode through visualrepeat.vim. 
@@ -148,9 +151,9 @@ function! TextTransform#Arbitrary#Opfunc( selectionMode )
     endif
 endfunction
 
-function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping )
+function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping, isRepeat )
     let l:count = v:count1
-    if s:Transform(v:count, a:algorithm, a:selectionModes, 'beep')
+    if s:Transform(v:count, a:algorithm, a:selectionModes, 'beep') || a:isRepeat
 	" This mapping needs repeat.vim to be repeatable, because it contains of
 	" multiple steps (visual selection, "gv" and "p" commands inside
 	" s:Transform()). 
@@ -160,9 +163,9 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     endif
 endfunction
 
-function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
+function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let l:count = v:count1
-    if s:Transform(v:count, a:algorithm, visualmode(), 'beep')
+    if s:Transform(v:count, a:algorithm, visualmode(), 'beep') || a:isRepeat
 	" Make the visual mode mapping repeatable in normal mode, applying the
 	" previous visual mode transformation at the current cursor position,
 	" using the size of the last visual selection. 
