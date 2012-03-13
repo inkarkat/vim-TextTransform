@@ -170,8 +170,8 @@ To uninstall, use the |:RmVimball| command.
 DEPENDENCIES					  *TextTransform-dependencies*
 
 - Requires Vim 7.0 or higher. 
-- vimscript #2136 repeat.vim autoload script (optional). 
-- visualrepeat.vim autoload script (optional). 
+- repeat.vim (vimscript #2136) plugin (optional). 
+- visualrepeat.vim (vimscript #3848) plugin (optional). 
 
 ==============================================================================
 INTEGRATION					   *TextTransform-integration*
