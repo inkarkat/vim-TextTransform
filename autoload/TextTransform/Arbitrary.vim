@@ -2,7 +2,7 @@
 "
 " DEPENDENCIES:
 "   - vimscript #2136 repeat.vim autoload script (optional). 
-"   - visualrepeat.vim autoload script (optional). 
+"   - visualrepeat.vim (vimscript #3848) autoload script (optional). 
 "
 " Copyright: (C) 2011 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'. 
