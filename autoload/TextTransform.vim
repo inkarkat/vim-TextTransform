@@ -65,14 +65,23 @@
 "				key modifiers like "<S-...>". 
 "	001	07-Mar-2011	file creation from plugin/unimpaired.vim
 
+function! s:IsRepeat()
+    let l:isRepeat = 0
+    silent! let l:isRepeat = (b:changedtick == g:repeat_tick || b:changedtick == g:visualrepeat_tick)
+    return l:isRepeat
+endfunction
 function! s:Before()
     let s:isModified = &l:modified
+    let s:isRepeat = s:IsRepeat()
 endfunction
 function! s:After()
     if ! s:isModified
 	setlocal nomodified
     endif
     unlet s:isModified
+endfunction
+function! s:GetIsRepeat()
+    return s:isRepeat
 endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
@@ -83,17 +92,18 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \	    substitute(substitute(string(a:algorithm), '^function(''\(.*\)'')', '\1', ''), '<SNR>', '', 'g')
     \)
     let l:plugMappingName = '<Plug>' . l:mappingName
-    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(1, getline(1))<Bar>call <SID>After()<Bar>'
 
-    execute printf('nnoremap <silent> <expr> %s %sOperator TextTransform#Arbitrary#Expression(%s, %s)',
+    execute printf('nnoremap <silent> <expr> %s %sOperator TextTransform#Arbitrary#Expression(%s, %s, <SID>IsRepeat())',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	string(a:algorithm),
     \	string(l:mappingName)
     \)
 
+    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(1, getline(1))<Bar>call <SID>After()<Bar>'
+
     " Repeat not defined in visual mode. 
-    execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s)<CR>',
+    execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s, <SID>GetIsRepeat())<CR>',
     \	a:mapArgs,
     \	l:mappingName,
     \	l:noopModificationCheck,
@@ -110,7 +120,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \)
 
     let l:SelectionModes = a:0 ? a:1 : 'lines'  
-    execute printf('nnoremap <silent> %s %sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s)<CR>',
+    execute printf('nnoremap <silent> %s %sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s, <SID>GetIsRepeat())<CR>',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	l:noopModificationCheck,
