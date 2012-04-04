@@ -39,7 +39,7 @@ RELATED WORKS								     *
 USAGE							 *TextTransform-usage*
 
 						*TextTransform#MakeMappings()*
-TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
+TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes} [, {options}]] )
 
 			Create normal and visual mode mappings that apply
 			{algorithm} to the text covered by {motion}, [count]
@@ -116,8 +116,19 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 				return 1
 			    endfunction
 <
+			The optional {options} dictionary can contain the
+			following keys:
+    cursorPosAfterLine	Defines where the cursor should be left after applying
+			a transformation of line(s). By default, "begin".
+			You can also specify "end", "original", or a Funcref
+			that is invoked to set the cursor position yourself.
+   cursorPosAfterMotion	Defines where the cursor should be left after applying
+			a transformation of moved-over text.
+   cursorPosAfterVisual	Defines where the cursor should be left after applying
+			a transformation of the visual selection.
+
 						 *TextTransform#MakeCommand()*
-TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm}, [{options}] )
+TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm} [, {options}] )
 
 			Create a custom command {commandName} that takes a
 			range (defaulting to the current line), and applies
