@@ -1,4 +1,6 @@
-" TextTransform.vim: Create text transformation mappings and commands. 
+" TextTransform/Lines.vim: Text transformation on lines of text.
+"
+" This module is responsible for the transformation triggered by commands.
 "
 " DEPENDENCIES:
 "
