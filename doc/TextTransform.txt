@@ -1,4 +1,4 @@
-*TextTransform.txt*     Create text transformation mappings and commands. 
+*TextTransform.txt*     Create text transformation mappings and commands.
 
 		       TEXT TRANSFORM    by Ingo Karkat
 							   *TextTransform.vim*
@@ -17,23 +17,23 @@ DESCRIPTION					   *TextTransform-description*
 This plugin allows you to build your own text transformations. You only supply
 the transformation algorithm in the form of a Vim function that takes a string
 and returns the transformed text (think |substitute()|), and TextTransform
-will create all appropriate mappings and / or commands with a single call! 
+will create all appropriate mappings and / or commands with a single call!
 
 Do you often perform the same |:substitute| commands over and over again? You
 may be able to save yourself a lot of typing by creating custom commands and
 mappings for it. Because the mappings (like built-in Vim commands such as |gU|
 or |g?|)  are applicable to text moved over by {motion}, entire lines, and the
 visual selection, you'll also have way more flexibility and places where you
-can apply them (compared to the line-based range of :substitute). 
+can apply them (compared to the line-based range of :substitute).
 
 RELATED WORKS								     *
 
-- Idea, design and implementation are based on unimpaired.vim (vimscript
-  #1590) by Tim Pope. The unimpaired.vim plugin implements XML, URL and C
-  String encoding mappings, but isn't extensible with other algorithms. 
+- Idea, design and implementation are based on Tim Pope's unimpaired.vim
+  plugin (vimscript #1590). It implements XML, URL and C String encoding
+  mappings, but isn't extensible with other algorithms.
   The TextTransform plugin enhances unimpaired's transformation function with
   handling of text objects and a list of selection fallbacks, and allows to
-  not only create mappings, but also transformation commands. 
+  not only create mappings, but also transformation commands.
 
 ==============================================================================
 USAGE							 *TextTransform-usage*
@@ -43,15 +43,15 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 
 			Create normal and visual mode mappings that apply
 			{algorithm} to the text covered by {motion}, [count]
-			line(s), and the visual selection. 
+			line(s), and the visual selection.
 
 			When {key} is <Leader>xy, the following mappings will
-			be created: 
+			be created:
 			- <Leader>xy{motion}	applies to moved-over text
 			- <Leader>xyy		applies to entire current line
 			- {Visual}<Leader>xy	applies to visual selection
 			For the linewise normal mode mapping, the last
-			character of {key} is doubled, as is customary in Vim. 
+			character of {key} is doubled, as is customary in Vim.
 
 			When {key} is empty, only <Plug> mappings are created;
 			mappings are also skipped when there are existing
@@ -62,11 +62,11 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 			    nmap <Plug>TextTMyTransformLine
 			    vmap <Plug>TextTMyTransformVisual
 <			Use this to selectively override or disable individual
-			mappings. 
+			mappings.
 
 			|:map-arguments| can be passed in {mapArgs}, e.g.
 			"<buffer>" to make the generated mappings
-			buffer-local. 
+			buffer-local.
 						     *TextTransform-algorithm*
 			{algorithm} is the name of a function: "MyTransform",
 			or a |Funcref|: function("MyTransform"). This function
@@ -78,12 +78,12 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 			than one line, {algorithm} is invoked only once with
 			the entire, newline-delimited text. You need to
 			consider that when using regular expression atoms like
-			|^| and |$|. 
+			|^| and |$|.
 			The function can |:throw| an exception to signal an
 			error. When the original text is returned,
 			TextTransform will print an error that nothing was
 			transformed. Do this when the transformation is not
-			applicable. 
+			applicable.
 
 			By default, the <Leader>xyy mapping will be applied to
 			the entire line. For some transformations, a different
@@ -91,7 +91,7 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 			between quotes. After all, the <Leader>xyy mapping is
 			often faster than <Leader>xy{motion} or first doing a
 			visual selection, and is easiest to commit to muscle
-			memory, so it should "do what I mean". 
+			memory, so it should "do what I mean".
 						*TextTransform-selectionModes*
 			The optional {selectionModes} argument is a single
 			text object (such as "aw"), motion (e.g. "$"),
@@ -105,7 +105,7 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm}, [{selectionModes}] )
 			back to text inside single quotes when the first one
 			doesn't yield any text. Finally, the "lines" will
 			transform the entire line if the single quote capture
-			failed, too. 
+			failed, too.
 			A custom function should create a visual selection and
 			return a non-zero value if the selection can be made.
 			(Otherwise, the next selectionMode in the list is
@@ -121,18 +121,18 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm}, [{optio
 
 			Create a custom command {commandName} that takes a
 			range (defaulting to the current line), and applies
-			{algorithm} to the line(s). 
+			{algorithm} to the line(s).
 
 			|:command| attributes can be passed in
 			{commandOptions}. For example, pass "-range=%" to make
 			the command apply to the entire buffer when no range
-			is specified. 
+			is specified.
 
 			{algorithm} is the name of a function or a |Funcref|,
-			cp. |Transform-algorithm|. 
+			cp. |Transform-algorithm|.
 
 			The optional {options} dictionary can contain the
-			following keys: 
+			following keys:
     isProcessEntireText Flag whether all lines are passed as one
 			newline-delimited string to {algorithm}, like mappings
 			from |TextTransform#MakeMappings()| do. Off by
@@ -140,7 +140,7 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm}, [{optio
 			individually (without the newline). This allows for a
 			more efficient transformation. You need to enable this
 			if {algorithm} transforms the newline, adds or removes
-			lines. 
+			lines.
 
 					*TextTransform#MakeSelectionCommand()*
 TextTransform#MakeSelectionCommand( {commandOptions}, {commandName}, {algorithm}, {selectionModes} )
@@ -148,20 +148,38 @@ TextTransform#MakeSelectionCommand( {commandOptions}, {commandName}, {algorithm}
 			Create a custom command {commandName} that applies
 			{algorithm} on the |TextTransform-selectionModes|
 			specified by {selectionModes}, or the current visual
-			selection (when invoked from visual mode). 
+			selection (when invoked from visual mode).
 			This is useful for algorithms that do not make sense
 			on entire lines. It's the command-variant of the
 			line-based mapping created by
 			|TextTransform#MakeMappings()|. For seldomly used
 			transformations, a command may have advantages over a
 			mapping: It doesn't take up precious mapping keys and
-			is more explorable via command-line completion. 
+			is more explorable via command-line completion.
 
-			Rest of the arguments as with |TextTransform#MakeCommand()|. 
+			Rest of the arguments as with |TextTransform#MakeCommand()|.
 
 
 EXAMPLE						       *TextTransform-example*
 
+Here's a stupid transformation function that replaces all alphabetic
+characters with "X": >
+    function! BlankOut( text )
+	return substitute(a:text, '\a', 'X', 'g')
+    endfunction
+With this, this single call: >
+    call TextTransform#MakeMappings('', '<Leader>x', 'BlankOut')
+creates this set of mappings:
+
+    <Leader>x{motion}   transforms the text covered by {motion}
+    <Leader>xx		transforms [count] line(s)
+    {Visual}<Leader>x   transforms the visual selection
+
+You can set up a command for this transformation just as easily: >
+    call TextTransform#MakeCommand('', 'TextBlankOut', 'BlankOut')
+so you can blank out the next three lines via >
+    :.,.+2TextBlankOut
+<
 ==============================================================================
 INSTALLATION					  *TextTransform-installation*
 
@@ -171,13 +189,13 @@ the archive first, e.g. using WinZip. Inside Vim, install by sourcing the
 vimball or via the |:UseVimball| command. >
     vim TextTransform.vba.gz
     :so %
-To uninstall, use the |:RmVimball| command. 
+To uninstall, use the |:RmVimball| command.
 
 DEPENDENCIES					  *TextTransform-dependencies*
 
-- Requires Vim 7.0 or higher. 
-- repeat.vim (vimscript #2136) plugin (optional). 
-- visualrepeat.vim (vimscript #3848) plugin (optional). 
+- Requires Vim 7.0 or higher.
+- repeat.vim (vimscript #2136) plugin (optional)
+- visualrepeat.vim (vimscript #3848) plugin (optional)
 
 ==============================================================================
 INTEGRATION					   *TextTransform-integration*
@@ -194,15 +212,15 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
-1.00	05-Apr-2011
-First published version. 
+1.00	05-Apr-2012
+First published version.
 
 0.01	07-Mar-2011
-Started development. 
+Started development.
 
 ==============================================================================
 Copyright: (C) 2011-2012 Ingo Karkat
-The VIM LICENSE applies to this script; see |copyright|. 
+The VIM LICENSE applies to this script; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>
 ==============================================================================
