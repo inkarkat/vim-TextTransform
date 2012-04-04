@@ -6,7 +6,7 @@
 "   - vimscript #2136 repeat.vim autoload script (optional). 
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional). 
 "
-" Copyright: (C) 2011 Ingo Karkat
+" Copyright: (C) 2011-2012 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'. 
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope. 
@@ -14,6 +14,28 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS 
+"	005	14-Mar-2012	Always set repetition, not just when the
+"				transformation succeeds, so that the repetition
+"				does not unset itself when a repeat attempt
+"				fails. This trades one inconsistency for
+"				another: The initial mapping should not repeat
+"				when the transformation fails. We could achieve
+"				that for the line and visual mappings, although
+"				clumsily. (We need to pass a:isRepeat to the
+"				functions here; either we set up a duplicate set
+"				of Repeat <Plug>-mappings, or we try to detect
+"				the repetition at the beginning of the
+"				<Plug>-mapping (in s:Before(), comparing
+"				b:changedtick with g:repeat_tick, which caused
+"				funny errors when I tried it), and then pass
+"				this information to the later call via a
+"				script-local variable.) This cannot be achieved
+"				for the operator-pending mapping, because Vim
+"				will always repeat the g@ command; there's no
+"				way to undo that. Therefore, rather be
+"				internally consistent and avoid the large
+"				complexity of a partial solution (which other
+"				repeat.vim plugins also do not attempt.)
 "	004	06-Dec-2011	Retire visualrepeat#set_also(); use
 "				visualrepeat#set() everywhere. 
 "	003	13-Jun-2011	FIX: Directly ring the bell to avoid problems
@@ -133,48 +155,47 @@ function! s:Transform( count, algorithm, selectionModes, onError )
     return l:isSuccess
 endfunction
 
-function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping, isRepeat )
+function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
-    let s:isRepeat = a:isRepeat
     let &opfunc = 'TextTransform#Arbitrary#Opfunc'
     return 'g@'
 endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
     let l:count = v:count1
-    if s:Transform(v:count, s:algorithm, a:selectionMode, 'beep') || s:isRepeat
-	" This mapping repeats naturally, because it just sets global things,
-	" and Vim is able to repeat the g@ on its own. 
-	" But enable a repetition in visual mode through visualrepeat.vim. 
-	silent! call visualrepeat#set("\<Plug>" . s:repeatMapping . 'Visual', l:count)
-    endif
+    call s:Transform(v:count, s:algorithm, a:selectionMode, 'beep')
+
+    " This mapping repeats naturally, because it just sets global things,
+    " and Vim is able to repeat the g@ on its own. 
+    " But enable a repetition in visual mode through visualrepeat.vim. 
+    silent! call visualrepeat#set("\<Plug>" . s:repeatMapping . 'Visual', l:count)
 endfunction
 
-function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping, isRepeat )
+function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping )
     let l:count = v:count1
-    if s:Transform(v:count, a:algorithm, a:selectionModes, 'beep') || a:isRepeat
-	" This mapping needs repeat.vim to be repeatable, because it contains of
-	" multiple steps (visual selection, "gv" and "p" commands inside
-	" s:Transform()). 
-	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Line', l:count)
-	" Also enable a repetition in visual mode through visualrepeat.vim. 
-	silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
-    endif
+    call s:Transform(v:count, a:algorithm, a:selectionModes, 'beep')
+
+    " This mapping needs repeat.vim to be repeatable, because it contains of
+    " multiple steps (visual selection, "gv" and "p" commands inside
+    " s:Transform()). 
+    silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Line', l:count)
+    " Also enable a repetition in visual mode through visualrepeat.vim. 
+    silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
 endfunction
 
-function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
+function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
     let l:count = v:count1
-    if s:Transform(v:count, a:algorithm, visualmode(), 'beep') || a:isRepeat
-	" Make the visual mode mapping repeatable in normal mode, applying the
-	" previous visual mode transformation at the current cursor position,
-	" using the size of the last visual selection. 
-	" Note: We cannot pass the count here, the <SID>Reselect "1v" would
-	" swallow that. But what would a count mean in this case, anyway? 
-	silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
-	" Also enable a repetition in visual mode through visualrepeat.vim. 
-	silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
-    endif
+    call s:Transform(v:count, a:algorithm, visualmode(), 'beep')
+
+    " Make the visual mode mapping repeatable in normal mode, applying the
+    " previous visual mode transformation at the current cursor position, using
+    " the size of the last visual selection. 
+    " Note: We cannot pass the count here, the <SID>Reselect "1v" would swallow
+    " that. But what would a count mean in this case, anyway? 
+    silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
+    " Also enable a repetition in visual mode through visualrepeat.vim. 
+    silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
 endfunction
 
 function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm, selectionModes )
