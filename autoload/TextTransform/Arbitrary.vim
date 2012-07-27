@@ -3,17 +3,22 @@
 " This module is responsible for the transformation triggered by mappings.
 "
 " DEPENDENCIES:
-"   - vimscript #2136 repeat.vim autoload script (optional). 
-"   - visualrepeat.vim (vimscript #3848) autoload script (optional). 
+"   - vimscript #2136 repeat.vim autoload script (optional).
+"   - visualrepeat.vim (vimscript #3848) autoload script (optional).
 "
 " Copyright: (C) 2011-2012 Ingo Karkat
-"   The VIM LICENSE applies to this script; see ':help copyright'. 
+"   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
-"   by Tim Pope. 
+"   by Tim Pope.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
-" REVISION	DATE		REMARKS 
+" REVISION	DATE		REMARKS
+"   1.01.006	05-Apr-2012	Place the cursor at the beginning of the
+"				transformed text, to be consistent with built-in
+"				transformation commands like gU, and because it
+"				makes much more sense.
+"   1.00.005	05-Apr-2012	Initial release.
 "	005	14-Mar-2012	Always set repetition, not just when the
 "				transformation succeeds, so that the repetition
 "				does not unset itself when a repeat attempt
@@ -37,11 +42,11 @@
 "				complexity of a partial solution (which other
 "				repeat.vim plugins also do not attempt.)
 "	004	06-Dec-2011	Retire visualrepeat#set_also(); use
-"				visualrepeat#set() everywhere. 
+"				visualrepeat#set() everywhere.
 "	003	13-Jun-2011	FIX: Directly ring the bell to avoid problems
-"				when running under :silent!. 
-"	002	05-Apr-2011	Implement TextTransform#Arbitrary#Command(). 
-"	001	05-Apr-2011	file creation from autoload/TextTransform.vim. 
+"				when running under :silent!.
+"	002	05-Apr-2011	Implement TextTransform#Arbitrary#Command().
+"	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 
 function! s:Error( onError, errorText )
     if a:onError ==# 'beep'
@@ -58,7 +63,7 @@ function! s:ApplyAlgorithm( algorithm, text )
 	return call(a:algorithm, [a:text])
     catch /^Vim\%((\a\+)\)\=:E/
 	" v:exception contains what is normally in v:errmsg, but with extra
-	" exception source info prepended, which we cut away. 
+	" exception source info prepended, which we cut away.
 	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
 	echohl ErrorMsg
 	echomsg v:errmsg
@@ -74,7 +79,7 @@ function! s:Transform( count, algorithm, selectionModes, onError )
     let l:save_view = winsaveview()
     let l:save_cursor = getpos('.')
     let l:save_clipboard = &clipboard
-    set clipboard= " Avoid clobbering the selection and clipboard registers. 
+    set clipboard= " Avoid clobbering the selection and clipboard registers.
     let l:save_reg = getreg('"')
     let l:save_regmode = getregtype('"')
     let @" = ''
@@ -104,11 +109,11 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	    silent! execute 'normal y' . l:count . l:SelectionMode
 	endif
 "****D echomsg '****' string(l:SelectionMode) string(@")
-	
+
 	if empty(@")
 	    unlet l:SelectionMode
 
-	    " Reset the cursor; some selection modes depend on it. 
+	    " Reset the cursor; some selection modes depend on it.
 	    call setpos('.', l:save_cursor)
 	else
 	    break
@@ -128,21 +133,25 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	    " so that the actually yanked text is replaced (this is important
 	    " for blockwise selections). Do not restore the block selection
 	    " width - the transformation may have changed it, so let Vim
-	    " re-calculate it based on the longest line. 
+	    " re-calculate it based on the longest line.
 	    call setreg('"', l:transformedText, l:yankMode[0])
 	    if l:isTextObject
 		" Depending on the text object, the end of change mark `] may or
 		" may not be one beyond the end of the text object. (Cp. with
 		" selection=inclusive "i'", where it includes the ending quote
-		" vs. "aw", where it is positioned on the trailing whitespace. 
+		" vs. "aw", where it is positioned on the trailing whitespace.
 		" Therefore, instead of relying on a visual re-selection, we
 		" re-execute the text object (at the original position) to
-		" replace the text. 
+		" replace the text.
 		call setpos('.', l:save_cursor)
 		silent execute 'normal "_d' . l:count . l:SelectionMode
-		silent normal! P
+		" The paste command leaves the cursor at the end of the pasted
+		" text, but the behavior of built-in transformations is to place
+		" the cursor at the beginning of the transformed text. The g`[
+		" does this for us.
+		silent normal! Pg`[
 	    else
-		silent normal! gvp
+		silent normal! gvpg`[
 	    endif
 
 	    let l:isSuccess = 1
@@ -167,8 +176,8 @@ function! TextTransform#Arbitrary#Opfunc( selectionMode )
     call s:Transform(v:count, s:algorithm, a:selectionMode, 'beep')
 
     " This mapping repeats naturally, because it just sets global things,
-    " and Vim is able to repeat the g@ on its own. 
-    " But enable a repetition in visual mode through visualrepeat.vim. 
+    " and Vim is able to repeat the g@ on its own.
+    " But enable a repetition in visual mode through visualrepeat.vim.
     silent! call visualrepeat#set("\<Plug>" . s:repeatMapping . 'Visual', l:count)
 endfunction
 
@@ -178,9 +187,9 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
 
     " This mapping needs repeat.vim to be repeatable, because it contains of
     " multiple steps (visual selection, "gv" and "p" commands inside
-    " s:Transform()). 
+    " s:Transform()).
     silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Line', l:count)
-    " Also enable a repetition in visual mode through visualrepeat.vim. 
+    " Also enable a repetition in visual mode through visualrepeat.vim.
     silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
 endfunction
 
@@ -190,11 +199,11 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
 
     " Make the visual mode mapping repeatable in normal mode, applying the
     " previous visual mode transformation at the current cursor position, using
-    " the size of the last visual selection. 
+    " the size of the last visual selection.
     " Note: We cannot pass the count here, the <SID>Reselect "1v" would swallow
-    " that. But what would a count mean in this case, anyway? 
+    " that. But what would a count mean in this case, anyway?
     silent! call repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
-    " Also enable a repetition in visual mode through visualrepeat.vim. 
+    " Also enable a repetition in visual mode through visualrepeat.vim.
     silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
 endfunction
 
