@@ -14,6 +14,9 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.02.007	28-Jul-2012	Avoid E706: Variable type mismatch when
+"				TextTransform#Arbitrary#Expression() is used
+"				with both Funcref- and String-type algorithms.
 "   1.01.006	05-Apr-2012	Place the cursor at the beginning of the
 "				transformed text, to be consistent with built-in
 "				transformation commands like gU, and because it
@@ -165,6 +168,7 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 endfunction
 
 function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
+    unlet! s:algorithm  " The algorithm can be a Funcref or String; avoid E706: Variable type mismatch.
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
     let &opfunc = 'TextTransform#Arbitrary#Opfunc'
