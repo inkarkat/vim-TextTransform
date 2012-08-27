@@ -212,6 +212,10 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
+1.02	28-Jul-2012
+Avoid "E706: Variable type mismatch" when TextTransform#Arbitrary#Expression()
+is used with both Funcref- and String-type algorithms.
+
 1.01	05-Apr-2012
 In mappings and selection commands, place the cursor at the beginning of the
 transformed text, to be consistent with built-in transformation commands like
