@@ -212,6 +212,10 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
+1.03	28-Aug-2012
+For the custom operators, handle readonly and nomodifiable buffers by printing
+just the warning / error, without the multi-line function error.
+
 1.02	28-Jul-2012
 Avoid "E706: Variable type mismatch" when TextTransform#Arbitrary#Expression()
 is used with both Funcref- and String-type algorithms.
