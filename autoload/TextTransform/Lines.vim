@@ -4,15 +4,16 @@
 "
 " DEPENDENCIES:
 "
-" Copyright: (C) 2011 Ingo Karkat
-"   The VIM LICENSE applies to this script; see ':help copyright'. 
+" Copyright: (C) 2011-2012 Ingo Karkat
+"   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
-"   by Tim Pope. 
+"   by Tim Pope.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
-" REVISION	DATE		REMARKS 
-"	001	05-Apr-2011	file creation from autoload/TextTransform.vim. 
+" REVISION	DATE		REMARKS
+"   1.00.001	05-Apr-2012	Initial release.
+"	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 
 function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, algorithm )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
@@ -41,7 +42,7 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm
 
 	" In this process function, we don't get the modification data for free,
 	" we have to generate the data ourselves. Fortunately, we still have to
-	" original lines to compare with the changed buffer. 
+	" original lines to compare with the changed buffer.
 	for l:i in range(a:firstLine, a:lastLine)
 	    if getline(l:i) !=# l:lines[l:i - a:firstLine]
 		let l:lastModifiedLine = l:i
@@ -59,12 +60,12 @@ function! TextTransform#Lines#TransformCommand( firstLine, lastLine, algorithm, 
 
 	if l:modifiedLineCnt > 0
 	    " Set change marks to the first columns of the range, like
-	    " :substitute does. 
+	    " :substitute does.
 	    call setpos("'[", [0, a:firstLine, 1, 0])
 	    call setpos("']", [0, a:lastLine, 1, 0])
 
 	    " Move the cursor to the first non-blank character of the last
-	    " modified line, like :substitute does. 
+	    " modified line, like :substitute does.
 	    execute 'normal!' l:lastModifiedLine . 'G^'
 
 	    if l:modifiedLineCnt > &report
@@ -78,7 +79,7 @@ function! TextTransform#Lines#TransformCommand( firstLine, lastLine, algorithm, 
 	endif
     catch /^Vim\%((\a\+)\)\=:E/
 	" v:exception contains what is normally in v:errmsg, but with extra
-	" exception source info prepended, which we cut away. 
+	" exception source info prepended, which we cut away.
 	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
 	echohl ErrorMsg
 	echomsg v:errmsg
