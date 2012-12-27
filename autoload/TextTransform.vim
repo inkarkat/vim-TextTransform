@@ -1,29 +1,30 @@
-" TextTransform.vim: Create text transformation mappings and commands. 
+" TextTransform.vim: Create text transformation mappings and commands.
 "
 " DEPENDENCIES:
-"   - TextTransform#Arbitrary.vim autoload script. 
-"   - TextTransform#Lines.vim autoload script. 
+"   - TextTransform#Arbitrary.vim autoload script.
+"   - TextTransform#Lines.vim autoload script.
 "
-" Copyright: (C) 2011 Ingo Karkat
-"   The VIM LICENSE applies to this script; see ':help copyright'. 
+" Copyright: (C) 2011-2012 Ingo Karkat
+"   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
-"   by Tim Pope. 
+"   by Tim Pope.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
-" REVISION	DATE		REMARKS 
+" REVISION	DATE		REMARKS
+"   1.00.010	05-Apr-2012	Initial release.
 "	010	19-Oct-2011	BUG: Variable rename from LineTypes to
 "				l:selectionModes broke Funcref arguments; my
 "				test suite would have caught this, if only I had
-"				run it :-) 
+"				run it :-)
 "	009	11-Apr-2011	Implement customization of mappings (by having
 "				mappings to the <Plug>-mappings) and no custom
 "				mappings (by passing an empty a:key), just the
-"				<Plug>-mappings. 
+"				<Plug>-mappings.
 "	008	10-Apr-2011	Define commands with bang; otherwise,
 "				buffer-local commands defined by ftplugins will
 "				cause errors when the filetype changes (to one
-"				that defines the same commands). 
+"				that defines the same commands).
 "	007	05-Apr-2011	Add TextTransform#MakeSelectionCommand() command
 "				variant that uses s:Transform() and allows to
 "				operate on text objects, motions, visual
@@ -31,38 +32,38 @@
 "				Replace "unimpaired" prefix with "TextT" to
 "				remove the last remnant of the original
 "				unimpaired.vim script and make this fully
-"				independent. 
+"				independent.
 "	006	05-Apr-2011	Limit the amount of script that gets sourced
 "				when commands / mappings are defined during Vim
-"				startup: 
+"				startup:
 "				Extract actual transformations on lines to
-"				TextTransform#Lines.vim. 
+"				TextTransform#Lines.vim.
 "			    	Extract actual transformations in mappings to
-"			    	TextTransform#Arbitrary.vim. 
+"			    	TextTransform#Arbitrary.vim.
 "	005	29-Mar-2011	Rename TextTransform#MapTransform() to
-"				TextTransform#MakeMappings(). 
-"				Implement 'isProcessEntireText' option. 
+"				TextTransform#MakeMappings().
+"				Implement 'isProcessEntireText' option.
 "				Factor out s:TransformCommand() function and
 "				make it delegate to the passed
 "				a:ProcessFunction, which is either
-"				s:TransformLinewise() or s:TransformWholeText(). 
-"	004	28-Mar-2011	ENH: Allow use of funcref for a:algorithm in
+"				s:TransformLinewise() or s:TransformWholeText().
+"	004	28-Mar-2011	ENH: Allow use of Funcref for a:algorithm in
 "				order to support script-local transformation
-"				functions. 
+"				functions.
 "	003	25-Mar-2011	ENH: Use s:TransformExpression() instead of
 "				s:TransformSetup() to enable passing <count>
-"				before the operator-pending mapping. 
+"				before the operator-pending mapping.
 "				Tighten pattern to detect visualmode() arguments
-"				in s:Transform(). 
+"				in s:Transform().
 "				Implement TextTransform#MakeCommand() for
-"				linewise application of the algorithm. 
-"				ENH: Catch and report errors in algorithm. 
+"				linewise application of the algorithm.
+"				ENH: Catch and report errors in algorithm.
 "				ENH: Do not make the buffer modified if no
-"				transformation is done. 
+"				transformation is done.
 "	002	16-Mar-2011	Fix off-by-one errors with some modes and
-"				'selection' settings. 
+"				'selection' settings.
 "				FIX: Parsing for l:doubledKey now also accepts
-"				key modifiers like "<S-...>". 
+"				key modifiers like "<S-...>".
 "	001	07-Mar-2011	file creation from plugin/unimpaired.vim
 
 function! s:Before()
@@ -76,7 +77,7 @@ function! s:After()
 endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
-    " This will cause "E474: Invalid argument" if the mapping name gets too long. 
+    " This will cause "E474: Invalid argument" if the mapping name gets too long.
     let l:mappingName = 'TextT' . (
     \	type(a:algorithm) == type('') ?
     \	    a:algorithm :
@@ -93,7 +94,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 
     let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(1, getline(1))<Bar>call <SID>After()<Bar>'
 
-    " Repeat not defined in visual mode. 
+    " Repeat not defined in visual mode.
     execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s)<CR>',
     \	a:mapArgs,
     \	l:mappingName,
