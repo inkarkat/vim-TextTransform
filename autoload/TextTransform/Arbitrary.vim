@@ -14,6 +14,12 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.04.009	18-Jan-2013	FIX: In a blockwise visual selection with $ to
+"				the end of the lines, only the square block from
+"				'< to '> is transformed. Need to yank the
+"				selection with gvy instead of defining a new
+"				selection with the marks, a mistake inherited
+"				from the original unimpaired.vim implementation.
 "   1.03.008	28-Aug-2012	For the custom operators, handle readonly and
 "				nomodifiable buffers by printing just the
 "				warning / error, without the multi-line function
@@ -104,7 +110,7 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	elseif l:SelectionMode ==# 'lines'
 	    silent! execute 'normal! 0v' . l:count . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
 	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
-	    silent! execute 'normal! `<' . l:SelectionMode . '`>y'
+	    silent! execute 'normal! gvy'
 	elseif l:SelectionMode ==# 'char'
 	    silent! execute 'normal! `[v`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	elseif l:SelectionMode ==# 'line'
