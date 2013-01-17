@@ -14,6 +14,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.03.008	28-Aug-2012	For the custom operators, handle readonly and
+"				nomodifiable buffers by printing just the
+"				warning / error, without the multi-line function
+"				error.
 "   1.02.007	28-Jul-2012	Avoid E706: Variable type mismatch when
 "				TextTransform#Arbitrary#Expression() is used
 "				with both Funcref- and String-type algorithms.
@@ -171,8 +175,19 @@ function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
     unlet! s:algorithm  " The algorithm can be a Funcref or String; avoid E706: Variable type mismatch.
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
-    let &opfunc = 'TextTransform#Arbitrary#Opfunc'
-    return 'g@'
+    set opfunc=TextTransform#Arbitrary#Opfunc
+
+    let l:keys = 'g@'
+
+    if ! &l:modifiable || &l:readonly
+	" Probe for "Cannot make changes" error and readonly warning via a no-op
+	" dummy modification.
+	" In the case of a nomodifiable buffer, Vim will abort the normal mode
+	" command chain, discard the g@, and thus not invoke the operatorfunc.
+	let l:keys = ":call setline('.', getline('.'))\<CR>" . l:keys
+    endif
+
+    return l:keys
 endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
