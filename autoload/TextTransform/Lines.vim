@@ -3,6 +3,8 @@
 " This module is responsible for the transformation triggered by commands.
 "
 " DEPENDENCIES:
+"   - ingolines.vim autoload script (for
+"     TextTransform#Lines#TransformWholeText())
 "
 " Copyright: (C) 2011-2012 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
@@ -12,6 +14,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.03.002	02-Sep-2012	Avoid clobbering the expression register (for
+"				commands that use options.isProcessEntireText).
 "   1.00.001	05-Apr-2012	Initial release.
 "	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 
@@ -38,7 +42,7 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm
     let l:transformedText = call(a:algorithm, [l:text])
     if l:text !=# l:transformedText
 	silent execute a:firstLine . ',' . a:lastLine . 'delete _'
-	silent execute (a:firstLine - 1) . 'put =l:transformedText'
+	call ingolines#PutWrapper((a:firstLine - 1), 'put', l:transformedText)
 
 	" In this process function, we don't get the modification data for free,
 	" we have to generate the data ourselves. Fortunately, we still have to
