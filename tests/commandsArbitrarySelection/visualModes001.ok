@@ -1,0 +1,16 @@
+visual blockwise selection
+he says: "the XXXXX brown fox jumps
+over the 'lazy|XXX?. "No,
+please!" he yelled
+
+visual linewise selection
+XX|XXXX?|?XXX|XXXXX|XXXXX|XXX|XXXXX
+XXXX|XXX|?XXXX|XXX??|?XX?
+please!" he yelled
+
+visual characterwise selection
+he says: "the XXXXX|XXXXX|XXX jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+
