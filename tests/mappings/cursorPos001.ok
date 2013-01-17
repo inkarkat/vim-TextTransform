@@ -1,0 +1,46 @@
+visual blockwise selection from opposite
+he says: "the *XXXX brown fox jumps
+over the 'lazy|XXX?. "No,
+please!" he yelled
+
+visual blockwise selection
+he says: "the *XXXX brown fox jumps
+over the 'lazy|XXX?. "No,
+please!" he yelled
+
+visual linewise selection from opposite
+*X|XXXX?|?XXX|XXXXX|XXXXX|XXX|XXXXX
+XXXX|XXX|?XXXX|XXX??|?XX?
+please!" he yelled
+
+visual linewise selection
+*X|XXXX?|?XXX|XXXXX|XXXXX|XXX|XXXXX
+XXXX|XXX|?XXXX|XXX??|?XX?
+please!" he yelled
+
+visual characterwise selection from opposite
+he says: "the *XXXX|XXXXX|XXX jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+visual characterwise selection
+he says: "the *XXXX|XXXXX|XXX jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+line motion
+*X|XXXX?|?XXX|XXXXX|XXXXX|XXX|XXXXX
+XXXX|XXX|?XXXX|XXX??|?XX?
+please!" he yelled
+
+character motion
+he says: "the *XXXX|XXXXX|XXX jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+single line
+*X|XXXX?|?XXX|XXXXX|XXXXX|XXX|XXXXX
+over the 'lazy dog'. "No,
+please!" he yelled
+
+
