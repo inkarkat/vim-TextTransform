@@ -3,10 +3,10 @@
 " This module is responsible for the transformation triggered by mappings.
 "
 " DEPENDENCIES:
-"   - vimscript #2136 repeat.vim autoload script (optional).
-"   - visualrepeat.vim (vimscript #3848) autoload script (optional).
+"   - vimscript #2136 repeat.vim autoload script (optional)
+"   - visualrepeat.vim (vimscript #3848) autoload script (optional)
 "
-" Copyright: (C) 2011-2012 Ingo Karkat
+" Copyright: (C) 2011-2013 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -14,12 +14,18 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
-"   1.04.009	18-Jan-2013	FIX: In a blockwise visual selection with $ to
+"   1.10.009	18-Jan-2013	FIX: In a blockwise visual selection with $ to
 "				the end of the lines, only the square block from
 "				'< to '> is transformed. Need to yank the
 "				selection with gvy instead of defining a new
 "				selection with the marks, a mistake inherited
 "				from the original unimpaired.vim implementation.
+"				Save and restore the original visual area to
+"				avoid clobbering the '< and '> marks and gv by
+"				line- and motion mappings.
+"				Temporarily set g:TextTransformContext to the
+"				begin and end of the currently transformed area
+"				to offer an extended interface to algorithms.
 "   1.03.008	28-Aug-2012	For the custom operators, handle readonly and
 "				nomodifiable buffers by printing just the
 "				warning / error, without the multi-line function
@@ -72,6 +78,7 @@ function! s:Error( onError, errorText )
     endif
 endfunction
 function! s:ApplyAlgorithm( algorithm, text )
+    let g:TextTransformContext = {'mode': visualmode(), 'startPos': getpos("'<"), 'endPos': getpos("'>")}
     try
 	return call(a:algorithm, [a:text])
     catch /^Vim\%((\a\+)\)\=:E/
@@ -86,6 +93,8 @@ function! s:ApplyAlgorithm( algorithm, text )
 	echohl ErrorMsg
 	echomsg v:errmsg
 	echohl None
+    finally
+	unlet g:TextTransformContext
     endtry
 endfunction
 function! s:Transform( count, algorithm, selectionModes, onError )
@@ -96,6 +105,7 @@ function! s:Transform( count, algorithm, selectionModes, onError )
     let l:save_reg = getreg('"')
     let l:save_regmode = getregtype('"')
     let @" = ''
+    let l:save_visualarea = [visualmode(), getpos("'<"), getpos("'>")]
     let l:isSuccess = 0
     let l:count = (a:count ? a:count : '')
 
@@ -170,6 +180,12 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	    let l:isSuccess = 1
 	endif
     endif
+
+    if visualmode() !=# l:save_visualarea[0]
+	execute 'normal!' l:save_visualarea[0] . "\<Esc>"
+    endif
+    call setpos("'<", l:save_visualarea[1])
+    call setpos("'>", l:save_visualarea[2])
 
     call setreg('"', l:save_reg, l:save_regmode)
     let &clipboard = l:save_clipboard
