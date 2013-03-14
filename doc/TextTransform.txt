@@ -78,7 +78,15 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 			than one line, {algorithm} is invoked only once with
 			the entire, newline-delimited text. You need to
 			consider that when using regular expression atoms like
-			|^| and |$|.
+			|^| and |$|.		      *g:TextTransformContext*
+			If the algorithm needs to inspect the place in the
+			buffer from where the text was retrieved, this
+			information is provided in g:TextTransformContext, a
+			dictionary with the following keys:
+			    "mode": indicates the selection mode, one of "v",
+				    "V", or "^V" (like |visualmode()|)
+			    "startPos": the start position of the text
+			    "endPos"  : the end position of the text
 			The function can |:throw| an exception to signal an
 			error. When the original text is returned,
 			TextTransform will print an error that nothing was
@@ -212,6 +220,16 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
+1.10	19-Jan-2013
+- FIX: In a blockwise visual selection with $ to the end of the lines, only
+  the square block from '< to '> is transformed. Need to yank the selection
+  with gvy instead of defining a new selection with the marks, a mistake
+  inherited from the original unimpaired.vim implementation.
+- Save and restore the original visual area to avoid clobbering the '< and '>
+  marks and gv by line- and motion mappings.
+- Temporarily set g:TextTransformContext to the begin and end of the currently
+  transformed area to offer an extended interface to algorithms.
+
 1.03	05-Sep-2012
 - For the custom operators, handle readonly and nomodifiable buffers by
   printing just the warning / error, without the multi-line function error.
@@ -234,7 +252,7 @@ First published version.
 Started development.
 
 ==============================================================================
-Copyright: (C) 2011-2012 Ingo Karkat
+Copyright: (C) 2011-2013 Ingo Karkat
 The VIM LICENSE applies to this script; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>
