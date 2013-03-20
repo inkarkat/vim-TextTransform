@@ -120,7 +120,7 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	elseif l:SelectionMode ==# 'lines'
 	    silent! execute 'normal! 0v' . l:count . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
 	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
-	    silent! execute 'normal! gvy'
+	    silent! normal! gvy
 	elseif l:SelectionMode ==# 'char'
 	    silent! execute 'normal! `[v`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	elseif l:SelectionMode ==# 'line'
