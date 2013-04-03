@@ -220,6 +220,9 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
+1.11	RELEASEME
+Avoid changing the jumplist.
+
 1.10	19-Jan-2013
 - FIX: In a blockwise visual selection with $ to the end of the lines, only
   the square block from '< to '> is transformed. Need to yank the selection
