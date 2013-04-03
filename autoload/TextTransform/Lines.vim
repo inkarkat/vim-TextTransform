@@ -3,10 +3,9 @@
 " This module is responsible for the transformation triggered by commands.
 "
 " DEPENDENCIES:
-"   - ingolines.vim autoload script (for
-"     TextTransform#Lines#TransformWholeText())
+"   - ingolines.vim autoload script (for TextTransform#Lines#TransformWholeText())
 "
-" Copyright: (C) 2011-2012 Ingo Karkat
+" Copyright: (C) 2011-2013 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -14,17 +13,31 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.10.003	18-Jan-2013	Temporarily set g:TextTransformContext to the
+"				begin and end of the currently transformed lines
+"				to offer the same extended interface for
+"				algorithms that TextTransform/Arbitrary.vim
+"				had automatically with the '<, '> marks and
+"				visualmode().
 "   1.03.002	02-Sep-2012	Avoid clobbering the expression register (for
 "				commands that use options.isProcessEntireText).
 "   1.00.001	05-Apr-2012	Initial release.
 "	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 
+function! s:Transform( firstLine, lastLine, text, algorithm )
+    let g:TextTransformContext = {'mode': 'V', 'startPos': [0, a:firstLine, 1, 0], 'endPos': [0, a:lastLine, 0x7FFFFFFF, 0]}
+    try
+	return call(a:algorithm, [a:text])
+    finally
+	unlet g:TextTransformContext
+    endtry
+endfunction
 function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, algorithm )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
 
     for l:i in range(a:firstLine, a:lastLine)
 	let l:text = getline(l:i)
-	let l:transformedText = call(a:algorithm, [l:text])
+	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm)
 	if l:text !=# l:transformedText
 	    let l:lastModifiedLine = l:i
 	    let l:modifiedLineCnt += 1
@@ -39,7 +52,7 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm
 
     let l:lines = getline(a:firstLine, a:lastLine)
     let l:text = join(l:lines, "\n")
-    let l:transformedText = call(a:algorithm, [l:text])
+    let l:transformedText = s:Transform(a:firstLine, a:lastLine, l:text, a:algorithm)
     if l:text !=# l:transformedText
 	silent execute a:firstLine . ',' . a:lastLine . 'delete _'
 	call ingolines#PutWrapper((a:firstLine - 1), 'put', l:transformedText)
