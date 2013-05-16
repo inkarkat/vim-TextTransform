@@ -14,6 +14,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.11.010	21-Mar-2013	Avoid changing the jumplist.
 "   1.10.009	18-Jan-2013	FIX: In a blockwise visual selection with $ to
 "				the end of the lines, only the square block from
 "				'< to '> is transformed. Need to yank the
@@ -122,11 +123,11 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
 	    silent! normal! gvy
 	elseif l:SelectionMode ==# 'char'
-	    silent! execute 'normal! `[v`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
+	    silent! execute 'normal! g`[vg`]'. (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	elseif l:SelectionMode ==# 'line'
-	    silent! execute "normal! '[V']y"
+	    silent! execute "normal! g'[Vg']y"
 	elseif l:SelectionMode ==# 'block'
-	    silent! execute "normal! `[\<C-V>`]". (&selection ==# 'exclusive' ? 'l' : '') . 'y'
+	    silent! execute "normal! g`[\<C-V>g`]". (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	else
 	    let l:isTextObject = 1
 	    silent! execute 'normal y' . l:count . l:SelectionMode
