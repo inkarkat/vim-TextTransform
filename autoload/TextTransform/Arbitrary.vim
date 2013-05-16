@@ -14,6 +14,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.11.011	17-May-2013	FIX: When the selection mode is a text object,
+"				must still establish a visual selection of the
+"				yanked text so that g:TextTransformContext
+"				contains valid data for use by a:algorithm.
 "   1.11.010	21-Mar-2013	Avoid changing the jumplist.
 "   1.10.009	18-Jan-2013	FIX: In a blockwise visual selection with $ to
 "				the end of the lines, only the square block from
@@ -130,7 +134,11 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	    silent! execute "normal! g`[\<C-V>g`]". (&selection ==# 'exclusive' ? 'l' : '') . 'y'
 	else
 	    let l:isTextObject = 1
-	    silent! execute 'normal y' . l:count . l:SelectionMode
+	    silent! execute 'normal y' . l:count . l:SelectionMode . 'g`[vg`]'. (&selection ==# 'exclusive' ? 'l' : '') . "\<Esc>"
+	    " Note: After yanking the text object, still establish a visual
+	    " selection of the yanked text; s:ApplyAlgorithm() uses the visual
+	    " selection to establish the g:TextTransformContext for use by
+	    " a:algorithm.
 	endif
 "****D echomsg '****' string(l:SelectionMode) string(@")
 
