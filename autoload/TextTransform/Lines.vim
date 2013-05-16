@@ -3,7 +3,7 @@
 " This module is responsible for the transformation triggered by commands.
 "
 " DEPENDENCIES:
-"   - ingolines.vim autoload script (for TextTransform#Lines#TransformWholeText())
+"   - ingo/lines.vim autoload script (for TextTransform#Lines#TransformWholeText())
 "
 " Copyright: (C) 2011-2013 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
@@ -13,6 +13,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.11.004	04-Apr-2013	Move ingolines#PutWrapper() into ingo-library.
 "   1.10.003	18-Jan-2013	Temporarily set g:TextTransformContext to the
 "				begin and end of the currently transformed lines
 "				to offer the same extended interface for
@@ -55,7 +56,7 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm
     let l:transformedText = s:Transform(a:firstLine, a:lastLine, l:text, a:algorithm)
     if l:text !=# l:transformedText
 	silent execute a:firstLine . ',' . a:lastLine . 'delete _'
-	call ingolines#PutWrapper((a:firstLine - 1), 'put', l:transformedText)
+	silent call ingo#lines#PutWrapper((a:firstLine - 1), 'put', l:transformedText)
 
 	" In this process function, we don't get the modification data for free,
 	" we have to generate the data ourselves. Fortunately, we still have to
