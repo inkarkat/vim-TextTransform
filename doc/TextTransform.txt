@@ -222,9 +222,12 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
-1.11	RELEASEME
+1.11	17-May-2013
 - Avoid changing the jumplist.
 - Add dependency to ingo-library (vimscript #4433).
+- FIX: When the selection mode is a text object, must still establish a visual
+  selection of the yanked text so that g:TextTransformContext contains valid
+  data for use by a:algorithm.
 
 1.10	19-Jan-2013
 - FIX: In a blockwise visual selection with $ to the end of the lines, only
