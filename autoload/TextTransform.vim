@@ -1,8 +1,8 @@
 " TextTransform.vim: Create text transformation mappings and commands.
 "
 " DEPENDENCIES:
-"   - TextTransform#Arbitrary.vim autoload script.
-"   - TextTransform#Lines.vim autoload script.
+"   - TextTransform#Arbitrary.vim autoload script
+"   - TextTransform#Lines.vim autoload script
 "
 " Copyright: (C) 2011-2012 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
@@ -12,6 +12,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.04.011	28-Dec-2012	Minor: Correct lnum for no-modifiable buffer
+"				check.
 "   1.00.010	05-Apr-2012	Initial release.
 "	010	19-Oct-2011	BUG: Variable rename from LineTypes to
 "				l:selectionModes broke Funcref arguments; my
@@ -92,7 +94,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     \	string(l:mappingName)
     \)
 
-    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(1, getline(1))<Bar>call <SID>After()<Bar>'
+    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(".", getline("."))<Bar>call <SID>After()<Bar>'
 
     " Repeat not defined in visual mode.
     execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s)<CR>',
