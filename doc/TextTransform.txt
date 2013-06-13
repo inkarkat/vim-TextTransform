@@ -219,6 +219,13 @@ TODO							  *TextTransform-todo*
 
 IDEAS							 *TextTransform-ideas*
 
+- Provide a :[range]TextTransform {commandName1} [{commandName2} ...] with
+  custom completion of defined commands that applies all transformations to
+  the same [range]. Suggested by Zhao Cai.
+- Offer utility functions to split the text according to the used syntax
+  groups (through g:TextTransformContext and synID()), to simplify selective
+  application in algorithms. Suggested by Zhao Cai.
+
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
