@@ -1,0 +1,17 @@
+TextTransform: This won't work
+beep: single line
+
+TextTransform: This won't work
+beep: character motion
+
+TextTransform: This won't work
+beep: line motion
+
+TextTransform: This won't work
+beep: visual characterwise selection
+
+TextTransform: This won't work
+beep: visual linewise selection
+
+TextTransform: This won't work
+beep: visual blockwise selection
