@@ -4,7 +4,7 @@
 "   - TextTransform#Arbitrary.vim autoload script
 "   - TextTransform#Lines.vim autoload script
 "
-" Copyright: (C) 2011-2012 Ingo Karkat
+" Copyright: (C) 2011-2013 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -12,6 +12,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.012	14-Jun-2013	Minor: Make substitute() robust against
+"				'ignorecase'.
 "   1.04.011	28-Dec-2012	Minor: Correct lnum for no-modifiable buffer
 "				check.
 "   1.00.010	05-Apr-2012	Initial release.
@@ -83,7 +85,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     let l:mappingName = 'TextT' . (
     \	type(a:algorithm) == type('') ?
     \	    a:algorithm :
-    \	    substitute(substitute(string(a:algorithm), '^function(''\(.*\)'')', '\1', ''), '<SNR>', '', 'g')
+    \	    substitute(substitute(string(a:algorithm), '^\Cfunction(''\(.*\)'')', '\1', ''), '\C<SNR>', '', 'g')
     \)
     let l:plugMappingName = '<Plug>' . l:mappingName
 
