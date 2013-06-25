@@ -13,6 +13,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.11.005	17-May-2013	Use ingo-library for error messages.
 "   1.11.004	04-Apr-2013	Move ingolines#PutWrapper() into ingo-library.
 "   1.10.003	18-Jan-2013	Temporarily set g:TextTransformContext to the
 "				begin and end of the currently transformed lines
@@ -90,23 +91,12 @@ function! TextTransform#Lines#TransformCommand( firstLine, lastLine, algorithm, 
 		echo printf('Transformed %d line%s', l:modifiedLineCnt, (l:modifiedLineCnt == 1 ? '' : 's'))
 	    endif
 	else
-	    let v:errmsg = 'Nothing transformed'
-	    echohl ErrorMsg
-	    echomsg v:errmsg
-	    echohl None
+	    call ingo#msg#ErrorMsg('Nothing transformed')
 	endif
     catch /^Vim\%((\a\+)\)\=:E/
-	" v:exception contains what is normally in v:errmsg, but with extra
-	" exception source info prepended, which we cut away.
-	let v:errmsg = substitute(v:exception, '^Vim\%((\a\+)\)\=:', '', '')
-	echohl ErrorMsg
-	echomsg v:errmsg
-	echohl None
+	call ingo#msg#VimExceptionMsg()
     catch
-	let v:errmsg = 'TextTransform: ' . v:exception
-	echohl ErrorMsg
-	echomsg v:errmsg
-	echohl None
+	call ingo#msg#ErrorMsg('TextTransform: ' . v:exception)
     endtry
 endfunction
 
