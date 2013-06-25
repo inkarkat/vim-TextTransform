@@ -12,6 +12,11 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.013	26-Jun-2013	Also perform the no-op check for the generated
+"				commands. This avoids the attempted processing
+"				and gives a better error message than the
+"				current "E21: Cannot make changes, 'modifiable'
+"				is off: 10,10delete _"
 "   1.12.012	14-Jun-2013	Minor: Make substitute() robust against
 "				'ignorecase'.
 "   1.04.011	28-Dec-2012	Minor: Correct lnum for no-modifiable buffer
@@ -150,7 +155,7 @@ endfunction
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
-    execute printf('command! -bar %s %s %s call TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s)',
+    execute printf('command! -bar %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | call TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s)',
     \	a:commandOptions,
     \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
     \	a:commandName,
@@ -161,7 +166,7 @@ endfunction
 
 
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
-    execute printf('command -bar -count %s %s call TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s)',
+    execute printf('command -bar -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | call TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s)',
     \	a:commandOptions,
     \	a:commandName,
     \	string(a:algorithm),
