@@ -231,6 +231,8 @@ HISTORY						       *TextTransform-history*
 
 1.12	RELEASEME
 - Minor: Make substitute() robust against 'ignorecase'.
+- FIX: When the selection mode is a text object, and the text is at the end of
+  the line, the replacement is inserted one-off to the left.
 
 1.11	17-May-2013
 - Avoid changing the jumplist.
