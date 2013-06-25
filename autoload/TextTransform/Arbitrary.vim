@@ -15,6 +15,12 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.012	25-Jun-2013	FIX: When the selection mode is a text object,
+"				and the text is at the end of the line, the
+"				replacement is inserted one-off to the left.
+"				Temporarily :set virtualedit=onemore to ensure
+"				that the "P" paste is done at the right position
+"				in all cases.
 "   1.11.011	17-May-2013	FIX: When the selection mode is a text object,
 "				must still establish a visual selection of the
 "				yanked text so that g:TextTransformContext
@@ -171,12 +177,23 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 		" re-execute the text object (at the original position) to
 		" replace the text.
 		call setpos('.', l:save_cursor)
-		silent execute 'normal "_d' . l:count . l:SelectionMode
-		" The paste command leaves the cursor at the end of the pasted
-		" text, but the behavior of built-in transformations is to place
-		" the cursor at the beginning of the transformed text. The g`[
-		" does this for us.
-		silent normal! Pg`[
+		" When the text object works on text at the end of the line, the
+		" pasting with "P" is one off; "p" would need to be used. Since
+		" this situation is hard to detect, we don't want to apply the
+		" text object to a visual selection (a custom one may behave
+		" different there or even not be defined), and using "s$<Esc>"
+		" instead of "d" would clobber register "., we avoid this
+		" problematic behavior by temporarily changing 'virtualedit' to
+		" keep the cursor one past the end.
+		let l:save_virtualedit = &virtualedit
+		set virtualedit=onemore
+		    silent execute 'normal "_d' . l:count . l:SelectionMode
+		    " The paste command leaves the cursor at the end of the
+		    " pasted text, but the behavior of built-in transformations
+		    " is to place the cursor at the beginning of the transformed
+		    " text. The g`[ does this for us.
+		    silent normal! Pg`[
+		let &virtualedit = l:save_virtualedit
 	    else
 		silent normal! gvpg`[
 	    endif
