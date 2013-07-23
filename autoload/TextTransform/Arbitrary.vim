@@ -3,6 +3,7 @@
 " This module is responsible for the transformation triggered by mappings.
 "
 " DEPENDENCIES:
+"   - ingo/err.vim autoload script
 "   - ingo/msg.vim autoload script
 "   - vimscript #2136 repeat.vim autoload script (optional)
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional)
@@ -15,6 +16,9 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.013	26-Jun-2013	Use ingo/err.vim for commands; mappings use its
+"				infrastructure, but still :echomsg the error
+"				message (or beep).
 "   1.12.012	25-Jun-2013	FIX: When the selection mode is a text object,
 "				and the text is at the end of the line, the
 "				replacement is inserted one-off to the left.
@@ -84,17 +88,19 @@ function! s:Error( onError, errorText )
     if a:onError ==# 'beep'
 	execute "normal! \<C-\>\<C-n>\<Esc>"
     elseif a:onError ==# 'errmsg'
-	call ingo#msg#ErrorMsg(a:errorText)
+	call ingo#err#Set(a:errorText)
     endif
 endfunction
 function! s:ApplyAlgorithm( algorithm, text )
     let g:TextTransformContext = {'mode': visualmode(), 'startPos': getpos("'<"), 'endPos': getpos("'>")}
     try
-	return call(a:algorithm, [a:text])
+	return [1, call(a:algorithm, [a:text])]
     catch /^Vim\%((\a\+)\)\=:E/
-	call ingo#msg#VimExceptionMsg()
+	call ingo#err#SetVimException()
+	return [0, '']
     catch
-	call ingo#msg#ErrorMsg('TextTransform: ' . v:exception)
+	call ingo#err#Set('TextTransform: ' . v:exception)
+	return [0, '']
     finally
 	unlet g:TextTransformContext
     endtry
@@ -110,6 +116,7 @@ function! s:Transform( count, algorithm, selectionModes, onError )
     let l:save_visualarea = [visualmode(), getpos("'<"), getpos("'>")]
     let l:isSuccess = 0
     let l:count = (a:count ? a:count : '')
+    call ingo#err#Clear()
 
     let l:selectionModes = type(a:selectionModes) == type([]) ? a:selectionModes : [a:selectionModes]
     for l:SelectionMode in l:selectionModes
@@ -157,9 +164,17 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	call s:Error(a:onError, 'Not applicable here')
     else
 	let l:yankMode = getregtype('"')
-	let l:transformedText = s:ApplyAlgorithm(a:algorithm, @")
-	if l:transformedText ==# @"
+	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, @")
+	if ! l:isSuccess
 	    call winrestview(l:save_view)
+	    if a:onError ==# 'beep'
+		" s:ApplyAlgorithm() has already submitted the error, but for
+		" mappings, we also want them to beep.
+		call s:Error(a:onError, '')
+	    endif
+	elseif l:transformedText ==# @"
+	    call winrestview(l:save_view)
+	    let l:isSuccess = 0
 	    call s:Error(a:onError, 'Nothing transformed')
 	else
 	    " When setting the register, also set the corresponding yank mode,
@@ -197,8 +212,6 @@ function! s:Transform( count, algorithm, selectionModes, onError )
 	    else
 		silent normal! gvpg`[
 	    endif
-
-	    let l:isSuccess = 1
 	endif
     endif
 
@@ -235,7 +248,11 @@ endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
     let l:count = v:count1
-    call s:Transform(v:count, s:algorithm, a:selectionMode, 'beep')
+    if ! s:Transform(v:count, s:algorithm, a:selectionMode, 'beep')
+	if ingo#err#IsSet()
+	    call ingo#msg#ErrorMsg(ingo#err#Get())
+	endif
+    endif
 
     " This mapping repeats naturally, because it just sets global things,
     " and Vim is able to repeat the g@ on its own.
@@ -245,7 +262,11 @@ endfunction
 
 function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping )
     let l:count = v:count1
-    call s:Transform(v:count, a:algorithm, a:selectionModes, 'beep')
+    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep')
+	if ingo#err#IsSet()
+	    call ingo#msg#ErrorMsg(ingo#err#Get())
+	endif
+    endif
 
     " This mapping needs repeat.vim to be repeatable, because it contains of
     " multiple steps (visual selection, "gv" and "p" commands inside
@@ -257,7 +278,11 @@ endfunction
 
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
     let l:count = v:count1
-    call s:Transform(v:count, a:algorithm, visualmode(), 'beep')
+    if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep')
+	if ingo#err#IsSet()
+	    call ingo#msg#ErrorMsg(ingo#err#Get())
+	endif
+    endif
 
     " Make the visual mode mapping repeatable in normal mode, applying the
     " previous visual mode transformation at the current cursor position, using
@@ -275,7 +300,7 @@ function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm
 	let l:selectionMode = visualmode()
     endif
 
-    call s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg')
+    return s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg')
 endfunction
 
 " vim: set ts=8 sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
