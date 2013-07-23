@@ -202,7 +202,7 @@ To uninstall, use the |:RmVimball| command.
 DEPENDENCIES					  *TextTransform-dependencies*
 
 - Requires Vim 7.0 or higher.
-- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.004 or
+- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.009 or
   higher.
 - repeat.vim (vimscript #2136) plugin (optional)
 - visualrepeat.vim (vimscript #3848) plugin (optional)
@@ -233,6 +233,7 @@ HISTORY						       *TextTransform-history*
 - Minor: Make substitute() robust against 'ignorecase'.
 - FIX: When the selection mode is a text object, and the text is at the end of
   the line, the replacement is inserted one-off to the left.
+- Implement abort on error for generated commands.
 
 1.11	17-May-2013
 - Avoid changing the jumplist.
