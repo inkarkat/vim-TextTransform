@@ -90,13 +90,18 @@ function! TextTransform#Lines#TransformCommand( firstLine, lastLine, algorithm, 
 	    if l:modifiedLineCnt > &report
 		echo printf('Transformed %d line%s', l:modifiedLineCnt, (l:modifiedLineCnt == 1 ? '' : 's'))
 	    endif
+
+	    return 1
 	else
-	    call ingo#msg#ErrorMsg('Nothing transformed')
+	    call ingo#err#Set('Nothing transformed')
+	    return 0
 	endif
     catch /^Vim\%((\a\+)\)\=:E/
-	call ingo#msg#VimExceptionMsg()
+	call ingo#err#SetVimException()
+	return 0
     catch
-	call ingo#msg#ErrorMsg('TextTransform: ' . v:exception)
+	call ingo#err#Set('TextTransform: ' . v:exception)
+	return 0
     endtry
 endfunction
 
