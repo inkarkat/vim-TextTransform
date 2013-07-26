@@ -21,7 +21,7 @@ function! MarkBoundaries( text )
 endfunction
 function! MyTransform( text )
     " Converts alphabetic characters into "X", whitespace into "|" and the rest
-    " into "?". Keeps newline characters. 
+    " into "?". Keeps newline characters.
     return substitute(substitute(substitute(a:text, '\a', 'X', 'g'), '\n\@![^X \t]', '?', 'g'), '\s', '|', 'g')
 endfunction
 function! TheTransform( text )
@@ -32,4 +32,8 @@ function! NoTransform( text )
 endfunction
 function! BadTransform( text )
     throw "This won't work"
+endfunction
+function! ContextEcho( text )
+    echomsg printf('mode %s from %s to %s', strtrans(g:TextTransformContext.mode), string(g:TextTransformContext.startPos), string(g:TextTransformContext.endPos))
+    return MarkBoundaries(a:text)
 endfunction
