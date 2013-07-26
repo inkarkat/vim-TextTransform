@@ -1,0 +1,9 @@
+single line
+
+mode V from [0, 2, 1, 0] to [0, 2, 2147483647, 0]
+
+many lines
+
+mode V from [0, 2, 1, 0] to [0, 2, 2147483647, 0]
+mode V from [0, 3, 1, 0] to [0, 3, 2147483647, 0]
+mode V from [0, 4, 1, 0] to [0, 4, 2147483647, 0]
