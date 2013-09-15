@@ -83,6 +83,16 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 			buffer from where the text was retrieved, this
 			information is provided in g:TextTransformContext, a
 			dictionary with the following keys:
+			    "mapMode":	indicates what triggered the
+					transformation, one of
+					"n": normal mode mapping for line(s)
+					     e.g. <Leader>xyy
+					"o": operator pending mode mapping for
+					     moved-over text
+					     e.g. <Leader>xy{motion}
+					"v": visual mode mapping
+					     e.g. {Visual}<Leader>xy
+					"c": custom Ex command
 			    "mode": indicates the selection mode, one of "v",
 				    "V", or "^V" (like |visualmode()|)
 			    "startPos": the start position of the text
@@ -234,6 +244,9 @@ HISTORY						       *TextTransform-history*
 - FIX: When the selection mode is a text object, and the text is at the end of
   the line, the replacement is inserted one-off to the left.
 - Implement abort on error for generated commands.
+- Add g:TextTransformContext.mapMode context information so that
+  transformations can query from which source (line- or motion-mapping, or
+  custom command) they've been triggered.
 
 1.11	17-May-2013
 - Avoid changing the jumplist.
