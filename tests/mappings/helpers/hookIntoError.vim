@@ -7,4 +7,4 @@ function! <SNR>{s:SID}_Error( onError, errorText )
     if a:onError ==# 'beep'
 	echomsg 'beep:' g:teststep
     endif
-endfunction 
+endfunction
