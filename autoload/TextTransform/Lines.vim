@@ -13,6 +13,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.006	24-Jul-2013	Add g:TextTransformContext.mapMode.
 "   1.11.005	17-May-2013	Use ingo-library for error messages.
 "   1.11.004	04-Apr-2013	Move ingolines#PutWrapper() into ingo-library.
 "   1.10.003	18-Jan-2013	Temporarily set g:TextTransformContext to the
@@ -27,7 +28,7 @@
 "	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 
 function! s:Transform( firstLine, lastLine, text, algorithm )
-    let g:TextTransformContext = {'mode': 'V', 'startPos': [0, a:firstLine, 1, 0], 'endPos': [0, a:lastLine, 0x7FFFFFFF, 0]}
+    let g:TextTransformContext = {'mapMode': 'c', 'mode': 'V', 'startPos': [0, a:firstLine, 1, 0], 'endPos': [0, a:lastLine, 0x7FFFFFFF, 0]}
     try
 	return call(a:algorithm, [a:text])
     finally
