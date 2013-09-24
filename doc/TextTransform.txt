@@ -97,6 +97,19 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 				    "V", or "^V" (like |visualmode()|)
 			    "startPos": the start position of the text
 			    "endPos"  : the end position of the text
+			    "isAlgorithmRepeat":
+					Flag whether the same
+					|TextTransform-algorithm| is used
+					(either through another mapping /
+					command invocation, or via a mapping
+					repeat |.|) as the last time.
+			    "isRepeat": Flag whether the last used mapping
+					with the same algorithm has been
+					repeated via the |.| command. For
+					commands that process each line
+					individually, is 1 on subsequently
+					processed lines after the first line.
+
 			The function can |:throw| an exception to signal an
 			error. When the original text is returned,
 			TextTransform will print an error that nothing was
@@ -156,9 +169,11 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm} [, {opti
 			from |TextTransform#MakeMappings()| do. Off by
 			default, so that each line is passed to {algorithm}
 			individually (without the newline). This allows for a
-			more efficient transformation. You need to enable this
-			if {algorithm} transforms the newline, adds or removes
-			lines.
+			more efficient transformation. For subsequent lines,
+			the |g:TextTransformContext| key "isRepeat" is set to
+			1.
+			You need to enable this if {algorithm} transforms the
+			newline, adds or removes lines.
 
 					*TextTransform#MakeSelectionCommand()*
 TextTransform#MakeSelectionCommand( {commandOptions}, {commandName}, {algorithm}, {selectionModes} )
@@ -247,6 +262,13 @@ HISTORY						       *TextTransform-history*
 - Add g:TextTransformContext.mapMode context information so that
   transformations can query from which source (line- or motion-mapping, or
   custom command) they've been triggered.
+- Add g:TextTransformContext.isAlgorithmRepeat and
+  g:TextTransformContext.isRepeat context information (the latter through
+  additional <Plug>TextR... mappings) so that transformations that e.g. query
+  the user for something can skip the query and re-use the previously entered
+  value on a repeat of the mapping. It also allows commands that process the
+  lines individually to do different processing (or caching of expensive
+  values) for the first processed line.
 
 1.11	17-May-2013
 - Avoid changing the jumplist.
