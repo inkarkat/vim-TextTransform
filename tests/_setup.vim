@@ -37,3 +37,23 @@ function! ContextEcho( text )
     echomsg printf('mapMode %s, mode %s from %s to %s', string(g:TextTransformContext.mapMode), strtrans(g:TextTransformContext.mode), string(g:TextTransformContext.startPos), string(g:TextTransformContext.endPos))
     return MarkBoundaries(a:text)
 endfunction
+function! ContextMockTransform( text )
+    if type(g:context) == type([])
+	let l:context = remove(g:context, 0)
+	let l:context.description .= ' ('.len(g:context).')'
+	if empty(g:context)
+	    unlet g:context
+	endif
+    else
+	let l:context = g:context
+	unlet g:context
+    endif
+    call vimtap#Is(g:TextTransformContext.mapMode,           l:context.mapMode,           l:context.description . ' - ' . 'mapMode')
+    call vimtap#Is(g:TextTransformContext.mode,              l:context.mode,              l:context.description . ' - ' . 'mode')
+    call vimtap#Is(g:TextTransformContext.startPos[2],       l:context.startPos,          l:context.description . ' - ' . 'startPos')
+    call vimtap#Is(g:TextTransformContext.endPos[2],         l:context.endPos,            l:context.description . ' - ' . 'endPos')
+    call vimtap#Is(g:TextTransformContext.isAlgorithmRepeat, l:context.isAlgorithmRepeat, l:context.description . ' - ' . 'isAlgorithmRepeat')
+    call vimtap#Is(g:TextTransformContext.isRepeat,          l:context.isRepeat,          l:context.description . ' - ' . 'isRepeat')
+
+    return MyTransform(a:text)
+endfunction
