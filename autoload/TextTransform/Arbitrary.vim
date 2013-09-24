@@ -16,12 +16,15 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
-"   1.12.015	16-Sep-2013	Add g:TextTransformContext.isAlgorithmRepeat. By
-"				storing the algorithm and changedtick ourselves,
-"				we avoid the need to provide additional
-"				<Plug>TextT...Repeat mappings (which would not
-"				work for the Operator mapping, anyway, because
-"				its g@ is repeated by Vim itself).
+"   1.12.015	16-Sep-2013	Add g:TextTransformContext.isAlgorithmRepeat.
+"				Add g:TextTransformContext.isRepeat. For that,
+"				we need to provide additional <Plug>TextR...
+"				repeat mappings installed into repeat.vim. For
+"				the operator mapping, its g@ is repeated by Vim
+"				itself, but not the
+"				TextTransform#Arbitrary#Expression() triggered
+"				by the mapping, so we clear the repeatTick there
+"				to be able to distinguish.
 "   1.12.014	24-Jul-2013	Add g:TextTransformContext.mapMode.
 "   1.12.013	26-Jun-2013	Use ingo/err.vim for commands; mappings use its
 "				infrastructure, but still :echomsg the error
@@ -93,6 +96,7 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:repeatTick = -1
 let s:previousTransform = {'changedtick': -1, 'algorithm': ''}
 function! s:Error( onError, errorText )
     if a:onError ==# 'beep'
@@ -102,12 +106,16 @@ function! s:Error( onError, errorText )
     endif
 endfunction
 function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick )
+    let l:isAlgorithmRepeat = (s:previousTransform.changedtick == a:changedtick &&
+    \   type(s:previousTransform.algorithm) == type(a:algorithm) && s:previousTransform.algorithm ==# a:algorithm
+    \)
     let g:TextTransformContext = {
     \   'mapMode': a:mapMode,
     \   'mode': visualmode(),
     \   'startPos': getpos("'<"),
     \   'endPos': getpos("'>"),
-    \   'isAlgorithmRepeat': (s:previousTransform.changedtick == a:changedtick && s:previousTransform.algorithm ==# a:algorithm)
+    \   'isAlgorithmRepeat': l:isAlgorithmRepeat,
+    \   'isRepeat': (l:isAlgorithmRepeat && s:repeatTick == a:changedtick)
     \}
     try
 	return [1, call(a:algorithm, [a:text])]
@@ -247,6 +255,7 @@ function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
     unlet! s:algorithm  " The algorithm can be a Funcref or String; avoid E706: Variable type mismatch.
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
+    let s:repeatTick = -1
     set opfunc=TextTransform#Arbitrary#Opfunc
 
     let l:keys = 'g@'
@@ -277,10 +286,12 @@ function! TextTransform#Arbitrary#Opfunc( selectionMode )
     " Store the change number and algorithm so that we can detect a repeat of
     " the same substitution.
     let s:previousTransform = {'changedtick': b:changedtick, 'algorithm': s:algorithm}
+    let s:repeatTick = b:changedtick
 endfunction
 
-function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping )
+function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping, isRepeat )
     let l:count = v:count1
+    if ! a:isRepeat | let s:repeatTick = -1 | endif
     if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
@@ -296,10 +307,12 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     " Store the change number and algorithm so that we can detect a repeat of
     " the same substitution.
     let s:previousTransform = {'changedtick': b:changedtick, 'algorithm': a:algorithm}
+    let s:repeatTick = b:changedtick
 endfunction
 
-function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
+function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let l:count = v:count1
+    if ! a:isRepeat | let s:repeatTick = -1 | endif
     if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
@@ -317,6 +330,7 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping )
     " Store the change number and algorithm so that we can detect a repeat of
     " the same substitution.
     let s:previousTransform = {'changedtick': b:changedtick, 'algorithm': a:algorithm}
+    let s:repeatTick = b:changedtick
 endfunction
 
 function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm, selectionModes )
@@ -325,7 +339,13 @@ function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm
 	let l:selectionMode = visualmode()
     endif
 
-    return s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', 0)
+    let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+
+    " Store the change number and algorithm so that we can detect a repeat of
+    " the same substitution.
+    let s:previousTransform = {'changedtick': b:changedtick, 'algorithm': a:algorithm}
+
+    return l:status
 endfunction
 
 let &cpo = s:save_cpo
