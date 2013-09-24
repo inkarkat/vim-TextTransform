@@ -13,6 +13,9 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.12.014	16-Sep-2013	Provide separate <Plug>TextR... repeat mappings
+"				to be able to distinguish between a mapping and
+"				its repeat via repeat.vim.
 "   1.12.013	26-Jun-2013	Also perform the no-op check for the generated
 "				commands. This avoids the attempted processing
 "				and gives a better error message than the
@@ -89,48 +92,54 @@ endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     " This will cause "E474: Invalid argument" if the mapping name gets too long.
-    let l:mappingName = 'TextT' . (
+    let l:algorithmMappingName = (
     \	type(a:algorithm) == type('') ?
     \	    a:algorithm :
     \	    substitute(substitute(string(a:algorithm), '^\Cfunction(''\(.*\)'')', '\1', ''), '\C<SNR>', '', 'g')
     \)
+    let l:mappingName = 'TextT' . l:algorithmMappingName
+    let l:repeatMappingName = 'TextR' . l:algorithmMappingName
     let l:plugMappingName = '<Plug>' . l:mappingName
 
     execute printf('nnoremap <silent> <expr> %s %sOperator TextTransform#Arbitrary#Expression(%s, %s)',
     \	a:mapArgs,
     \	l:plugMappingName,
     \	string(a:algorithm),
-    \	string(l:mappingName)
+    \	string(l:repeatMappingName)
     \)
 
-    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(".", getline("."))<Bar>call <SID>After()<Bar>'
 
     " Repeat not defined in visual mode.
-    execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s)<CR>',
-    \	a:mapArgs,
-    \	l:mappingName,
-    \	l:noopModificationCheck,
-    \	string(a:algorithm),
-    \	string(l:mappingName)
-    \)
-    execute printf('vnoremap <silent> <script> %sVisual <SID>%sVisual',
-    \	l:plugMappingName,
-    \	l:mappingName
-    \)
-    execute printf('nnoremap <silent> <script> %sVisual <SID>Reselect<SID>%sVisual',
-    \	l:plugMappingName,
-    \	l:mappingName
-    \)
+    let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(".", getline("."))<Bar>call <SID>After()<Bar>'
+    for [l:mappingName, l:isRepeat] in [[l:mappingName, 0], [l:repeatMappingName, 1]]
+	execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s, %d)<CR>',
+	\   a:mapArgs,
+	\   l:mappingName,
+	\   l:noopModificationCheck,
+	\   string(a:algorithm),
+	\   string(l:repeatMappingName),
+	\   l:isRepeat
+	\)
+	execute printf('vnoremap <silent> <script> <Plug>%sVisual <SID>%sVisual',
+	\   l:mappingName,
+	\   l:mappingName
+	\)
+	execute printf('nnoremap <silent> <script> <Plug>%sVisual <SID>Reselect<SID>%sVisual',
+	\   l:mappingName,
+	\   l:mappingName
+	\)
 
-    let l:SelectionModes = (a:0 ? a:1 : 'lines')
-    execute printf('nnoremap <silent> %s %sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s)<CR>',
-    \	a:mapArgs,
-    \	l:plugMappingName,
-    \	l:noopModificationCheck,
-    \	string(a:algorithm),
-    \	string(l:SelectionModes),
-    \	string(l:mappingName)
-    \)
+	let l:SelectionModes = (a:0 ? a:1 : 'lines')
+	execute printf('nnoremap <silent> %s <Plug>%sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s, %d)<CR>',
+	\   a:mapArgs,
+	\   l:mappingName,
+	\   l:noopModificationCheck,
+	\   string(a:algorithm),
+	\   string(l:SelectionModes),
+	\   string(l:repeatMappingName),
+	\   l:isRepeat
+	\)
+    endfor
 
 
     if empty(a:key)
