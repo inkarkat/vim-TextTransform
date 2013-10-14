@@ -97,6 +97,10 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 				    "V", or "^V" (like |visualmode()|)
 			    "startPos": the start position of the text
 			    "endPos"  : the end position of the text
+			    "arguments":List of optional passed command
+					arguments (when arguments have been
+					configured for a command; always empty
+					for mappings).
 			    "isAlgorithmRepeat":
 					Flag whether the same
 					|TextTransform-algorithm| is used
@@ -157,7 +161,9 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm} [, {opti
 			|:command| attributes can be passed in
 			{commandOptions}. For example, pass "-range=%" to make
 			the command apply to the entire buffer when no range
-			is specified.
+			is specified. You can pass "-nargs=..." to pass
+			arguments to the algorithm (via
+			|g:TextTransformContext|.arguments).
 
 			{algorithm} is the name of a function or a |Funcref|,
 			cp. |Transform-algorithm|.
@@ -170,8 +176,7 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm} [, {opti
 			default, so that each line is passed to {algorithm}
 			individually (without the newline). This allows for a
 			more efficient transformation. For subsequent lines,
-			the |g:TextTransformContext| key "isRepeat" is set to
-			1.
+			|g:TextTransformContext|.isRepeat is set to 1.
 			You need to enable this if {algorithm} transforms the
 			newline, adds or removes lines.
 
@@ -254,7 +259,7 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
-1.12	RELEASEME
+1.20	25-Sep-2013
 - Minor: Make substitute() robust against 'ignorecase'.
 - FIX: When the selection mode is a text object, and the text is at the end of
   the line, the replacement is inserted one-off to the left.
@@ -269,6 +274,8 @@ HISTORY						       *TextTransform-history*
   value on a repeat of the mapping. It also allows commands that process the
   lines individually to do different processing (or caching of expensive
   values) for the first processed line.
+- Allow to pass command arguments, which are then accessible to the algorithm
+  through g:TextTransformContext.arguments.
 
 1.11	17-May-2013
 - Avoid changing the jumplist.
