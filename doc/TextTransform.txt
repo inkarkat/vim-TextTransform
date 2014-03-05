@@ -5,7 +5,6 @@
 description			|TextTransform-description|
 usage				|TextTransform-usage|
 installation			|TextTransform-installation|
-integration			|TextTransform-integration|
 limitations			|TextTransform-limitations|
 known problems			|TextTransform-known-problems|
 todo				|TextTransform-todo|
@@ -238,9 +237,6 @@ DEPENDENCIES					  *TextTransform-dependencies*
 - visualrepeat.vim (vimscript #3848) plugin (optional)
 
 ==============================================================================
-INTEGRATION					   *TextTransform-integration*
-
-==============================================================================
 LIMITATIONS					   *TextTransform-limitations*
 
 KNOWN PROBLEMS					*TextTransform-known-problems*
@@ -259,7 +255,7 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
-1.21	RELEASEME
+1.21	15-Jan-2014
 - Minor: Use functions for newer ingo-library.
 - Need to use ingo#compat#setpos() to restore the selection in Vim versions
   before 7.3.590.
@@ -322,7 +318,7 @@ First published version.
 Started development.
 
 ==============================================================================
-Copyright: (C) 2011-2013 Ingo Karkat
+Copyright: (C) 2011-2014 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>
