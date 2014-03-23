@@ -1,11 +1,17 @@
-" Test a transform command with an error in the algorithm. 
+" Test a transform command with an error in the algorithm.
 
 call TextTransform#MakeCommand('', 'TransformIt', 'BadTransform')
 
 
-call InsertExampleMultilineText('all lines')
+let g:teststep = 'all lines'
+call InsertExampleMultilineText(g:teststep)
 normal! gg$
-2,4TransformIt
+try
+    2,4TransformIt
+    call vimtap#Fail('expected error when ' . g:teststep)
+catch
+    call vimtap#err#Thrown("TextTransform: This won't work", 'Algorithm error shown')
+endtry
 normal! i#
 
 
