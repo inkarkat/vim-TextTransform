@@ -255,6 +255,9 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
+1.22	06-Mar-2014
+- Add TextTransform/Selections.vim.
+
 1.21	15-Jan-2014
 - Minor: Use functions for newer ingo-library.
 - Need to use ingo#compat#setpos() to restore the selection in Vim versions
