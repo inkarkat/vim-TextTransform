@@ -10,7 +10,7 @@
 "   - repeat.vim (vimscript #2136) autoload script (optional)
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional)
 "
-" Copyright: (C) 2011-2013 Ingo Karkat
+" Copyright: (C) 2011-2014 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -18,6 +18,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.23.019	25-Mar-2014	Minor: Also handle :echoerr in the algorithm.
 "   1.21.018	20-Nov-2013	Need to use ingo#compat#setpos() to make a
 "				selection in Vim versions before 7.3.590.
 "   1.21.017	15-Oct-2013	Replace conditional with ingo#list#Make().
@@ -126,7 +127,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments )
     \}
     try
 	return [1, call(a:algorithm, [a:text])]
-    catch /^Vim\%((\a\+)\)\=:E/
+    catch /^Vim\%((\a\+)\)\=:/
 	call ingo#err#SetVimException()
 	return [0, '']
     catch
