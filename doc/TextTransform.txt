@@ -255,6 +255,9 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
+1.23	RELEASEME
+- Minor: Also handle :echoerr in the algorithm.
+
 1.22	06-Mar-2014
 - Add TextTransform/Selections.vim.
 
