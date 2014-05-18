@@ -5,7 +5,7 @@
 " DEPENDENCIES:
 "   - ingo/lines.vim autoload script (for TextTransform#Lines#TransformWholeText())
 "
-" Copyright: (C) 2011-2013 Ingo Karkat
+" Copyright: (C) 2011-2014 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -13,6 +13,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.23.009	25-Mar-2014	Minor: Also handle :echoerr in the algorithm.
 "   1.20.008	25-Sep-2013	Add g:TextTransformContext.arguments.
 "   1.20.007	16-Sep-2013	Add g:TextTransform.isAlgorithmRepeat and
 "				g:TextTransform.isRepeat.
@@ -113,7 +114,7 @@ function! TextTransform#Lines#TransformCommand( firstLine, lastLine, algorithm, 
 	    call ingo#err#Set('Nothing transformed')
 	    return 0
 	endif
-    catch /^Vim\%((\a\+)\)\=:E/
+    catch /^Vim\%((\a\+)\)\=:/
 	call ingo#err#SetVimException()
 	return 0
     catch
