@@ -129,8 +129,10 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 						*TextTransform-selectionModes*
 			The optional {selectionModes} argument is a single
 			text object (such as "aw"), motion (e.g. "$"),
-			|Funcref| (for a custom selection), or the string
-			"lines", which represents the default behavior.
+			|Funcref| (for a custom selection), /-delimited
+			"/{pattern}/" (which selects the text region under /
+			after the cursor that matches {pattern}), or the
+			string "lines", which represents the default behavior.
 			If you pass a list of these, TextTransform tries each
 			selectionMode, one after the other, until one captures
 			non-empty text. For example, the passed list ['i"',
@@ -256,6 +258,8 @@ IDEAS							 *TextTransform-ideas*
 HISTORY						       *TextTransform-history*
 
 1.23	RELEASEME
+- ENH: Support selection mode "/{pattern}/", which selects the text region
+  under / after the cursor that matches {pattern}.
 - Minor: Also handle :echoerr in the algorithm.
 
 1.22	06-Mar-2014
