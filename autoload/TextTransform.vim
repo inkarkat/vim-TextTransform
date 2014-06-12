@@ -5,7 +5,7 @@
 "   - TextTransform#Lines.vim autoload script
 "   - ingo/err.vim autoload script
 "
-" Copyright: (C) 2011-2013 Ingo Karkat
+" Copyright: (C) 2011-2014 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -13,6 +13,13 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.24.016	13-Jun-2014	ENH: Allow optional [!] for made commands, and
+"				suppress the "Nothing transformed" error in that
+"				case. This can help when using the resulting
+"				command as an optional step, as prefixing with
+"				:silent! can be difficult to combine with
+"				ranges, and would suppress _all_ transformation
+"				errors.
 "   1.20.015	25-Sep-2013	Allow to pass command arguments, which are then
 "				accessible to the algorithm through
 "				g:TextTransformContext.arguments.
@@ -169,7 +176,7 @@ endfunction
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
-    execute printf('command! -bar %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s, <f-args>) | echoerr ingo#err#Get() | endif',
+    execute printf('command! -bar -bang %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
     \	a:commandOptions,
     \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
     \	a:commandName,
@@ -180,7 +187,7 @@ endfunction
 
 
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
-    execute printf('command -bar -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s, <f-args>) | echoerr ingo#err#Get() | endif',
+    execute printf('command -bar -bang -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
     \	a:commandOptions,
     \	a:commandName,
     \	string(a:algorithm),
