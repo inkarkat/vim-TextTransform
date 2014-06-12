@@ -13,7 +13,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
-"   1.12.014	16-Sep-2013	Provide separate <Plug>TextR... repeat mappings
+"   1.20.015	25-Sep-2013	Allow to pass command arguments, which are then
+"				accessible to the algorithm through
+"				g:TextTransformContext.arguments.
+"   1.20.014	16-Sep-2013	Provide separate <Plug>TextR... repeat mappings
 "				to be able to distinguish between a mapping and
 "				its repeat via repeat.vim.
 "   1.12.013	26-Jun-2013	Also perform the no-op check for the generated
@@ -166,7 +169,7 @@ endfunction
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
-    execute printf('command! -bar %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s) | echoerr ingo#err#Get() | endif',
+    execute printf('command! -bar %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Lines#TransformCommand(<line1>, <line2>, %s, %s, <f-args>) | echoerr ingo#err#Get() | endif',
     \	a:commandOptions,
     \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
     \	a:commandName,
@@ -177,7 +180,7 @@ endfunction
 
 
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
-    execute printf('command -bar -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s) | echoerr ingo#err#Get() | endif',
+    execute printf('command -bar -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <count>, %s, %s, <f-args>) | echoerr ingo#err#Get() | endif',
     \	a:commandOptions,
     \	a:commandName,
     \	string(a:algorithm),
