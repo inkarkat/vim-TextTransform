@@ -13,6 +13,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.23.010	19-May-2014	Refactoring: Use ingo#lines#Replace().
 "   1.23.009	25-Mar-2014	Minor: Also handle :echoerr in the algorithm.
 "   1.20.008	25-Sep-2013	Add g:TextTransformContext.arguments.
 "   1.20.007	16-Sep-2013	Add g:TextTransform.isAlgorithmRepeat and
@@ -72,8 +73,7 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm
     let l:text = join(l:lines, "\n")
     let l:transformedText = s:Transform(a:firstLine, a:lastLine, l:text, a:algorithm, 0, a:000)
     if l:text !=# l:transformedText
-	silent execute a:firstLine . ',' . a:lastLine . 'delete _'
-	silent call ingo#lines#PutWrapper((a:firstLine - 1), 'put', l:transformedText)
+	call ingo#lines#Replace(a:firstLine, a:lastLine, l:transformedText)
 
 	" In this process function, we don't get the modification data for free,
 	" we have to generate the data ourselves. Fortunately, we still have to
