@@ -157,7 +157,8 @@ TextTransform#MakeCommand( {commandOptions}, {commandName}, {algorithm} [, {opti
 
 			Create a custom command {commandName} that takes a
 			range (defaulting to the current line), and applies
-			{algorithm} to the line(s).
+			{algorithm} to the line(s). With an optional [!], the
+			usual "Nothing transformed" error is suppressed.
 
 			|:command| attributes can be passed in
 			{commandOptions}. For example, pass "-range=%" to make
@@ -256,6 +257,12 @@ IDEAS							 *TextTransform-ideas*
 
 ==============================================================================
 HISTORY						       *TextTransform-history*
+
+1.24	RELEASEME
+- ENH: Allow optional [!] for made commands, and suppress the "Nothing
+  transformed" error in that case. This can help when using the resulting
+  command as an optional step, as prefixing with :silent! can be difficult to
+  combine with ranges, and would suppress _all_ transformation errors.
 
 1.23	31-May-2014
 - ENH: Support selection mode "/{pattern}/", which selects the text region
