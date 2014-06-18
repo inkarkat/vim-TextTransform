@@ -100,6 +100,8 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 					arguments (when arguments have been
 					configured for a command; always empty
 					for mappings).
+			    "isBang":	Flag whether a [!] was passed to the
+					command; always 0 for mappings.
 			    "isAlgorithmRepeat":
 					Flag whether the same
 					|TextTransform-algorithm| is used
@@ -263,6 +265,7 @@ HISTORY						       *TextTransform-history*
   transformed" error in that case. This can help when using the resulting
   command as an optional step, as prefixing with :silent! can be difficult to
   combine with ranges, and would suppress _all_ transformation errors.
+- ENH: Add g:TextTransformContext.isBang (for custom transformation commands).
 
 1.23	31-May-2014
 - ENH: Support selection mode "/{pattern}/", which selects the text region
