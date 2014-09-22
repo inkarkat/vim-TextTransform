@@ -260,7 +260,7 @@ IDEAS							 *TextTransform-ideas*
 ==============================================================================
 HISTORY						       *TextTransform-history*
 
-1.24	RELEASEME
+1.24	19-Jun-2014
 - ENH: Allow optional [!] for made commands, and suppress the "Nothing
   transformed" error in that case. This can help when using the resulting
   command as an optional step, as prefixing with :silent! can be difficult to
