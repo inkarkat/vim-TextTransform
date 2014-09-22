@@ -13,6 +13,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.24.011	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
+"				custom transformation commands).
 "   1.23.010	19-May-2014	Refactoring: Use ingo#lines#Replace().
 "   1.23.009	25-Mar-2014	Minor: Also handle :echoerr in the algorithm.
 "   1.20.008	25-Sep-2013	Add g:TextTransformContext.arguments.
@@ -35,13 +37,14 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:previousAlgorithm = ''
-function! s:Transform( firstLine, lastLine, text, algorithm, isRepeat, arguments )
+function! s:Transform( firstLine, lastLine, text, algorithm, isRepeat, arguments, isBang )
     let g:TextTransformContext = {
     \   'mapMode': 'c',
     \   'mode': 'V',
     \   'startPos': [0, a:firstLine, 1, 0],
     \   'endPos': [0, a:lastLine, 0x7FFFFFFF, 0],
     \   'arguments': a:arguments,
+    \   'isBang': a:isBang,
     \   'isAlgorithmRepeat': (type(s:previousAlgorithm) == type(a:algorithm) && s:previousAlgorithm ==# a:algorithm),
     \   'isRepeat': a:isRepeat
     \}
@@ -51,12 +54,12 @@ function! s:Transform( firstLine, lastLine, text, algorithm, isRepeat, arguments
 	unlet g:TextTransformContext
     endtry
 endfunction
-function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, algorithm, ... )
+function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, isBang, algorithm, ... )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
 
     for l:i in range(a:firstLine, a:lastLine)
 	let l:text = getline(l:i)
-	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm, (l:i != a:firstLine), a:000)
+	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm, (l:i != a:firstLine), a:000, a:isBang)
 	if l:text !=# l:transformedText
 	    let l:lastModifiedLine = l:i
 	    let l:modifiedLineCnt += 1
@@ -66,12 +69,12 @@ function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, algorithm,
 
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
-function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm, ... )
+function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, isBang, algorithm, ... )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
 
     let l:lines = getline(a:firstLine, a:lastLine)
     let l:text = join(l:lines, "\n")
-    let l:transformedText = s:Transform(a:firstLine, a:lastLine, l:text, a:algorithm, 0, a:000)
+    let l:transformedText = s:Transform(a:firstLine, a:lastLine, l:text, a:algorithm, 0, a:000, a:isBang)
     if l:text !=# l:transformedText
 	call ingo#lines#Replace(a:firstLine, a:lastLine, l:transformedText)
 
@@ -89,9 +92,9 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, algorithm
     echomsg string( [l:lastModifiedLine, l:modifiedLineCnt])
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
-function! TextTransform#Lines#TransformCommand( firstLine, lastLine, algorithm, ProcessFunction, ... )
+function! TextTransform#Lines#TransformCommand( firstLine, lastLine, isBang, algorithm, ProcessFunction, ... )
     try
-	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [a:firstLine, a:lastLine, a:algorithm] + a:000)
+	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [a:firstLine, a:lastLine, a:isBang, a:algorithm] + a:000)
 
 	unlet! s:previousAlgorithm | let s:previousAlgorithm = a:algorithm
 
