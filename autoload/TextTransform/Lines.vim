@@ -13,6 +13,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.012	23-Sep-2014	Minor: Remove debugging output when a command
+"				transforms whole lines.
 "   1.24.011	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
 "				custom transformation commands).
 "   1.23.010	19-May-2014	Refactoring: Use ingo#lines#Replace().
@@ -88,8 +90,7 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, isBang, a
 	    endif
 	endfor
     endif
-
-    echomsg string( [l:lastModifiedLine, l:modifiedLineCnt])
+"****D echomsg '****' string( [l:lastModifiedLine, l:modifiedLineCnt])
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
 function! TextTransform#Lines#TransformCommand( firstLine, lastLine, isBang, algorithm, ProcessFunction, ... )
