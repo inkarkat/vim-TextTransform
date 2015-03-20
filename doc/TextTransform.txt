@@ -266,6 +266,7 @@ HISTORY						       *TextTransform-history*
   ingo#range#NetStart().
 - The selectionModes argument may (in /{pattern}/ form) contain special
   characters (e.g. "|" in /foo\|bar/) that need escaping in order to survive.
+- Add TextTransform#Selections#EntireBuffer() utility text selection.
   *** You need to update to ingo-library (vimscript #4433) version 1.022! ***
 
 1.24	19-Jun-2014
