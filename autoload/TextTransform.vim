@@ -4,8 +4,9 @@
 "   - TextTransform#Arbitrary.vim autoload script
 "   - TextTransform#Lines.vim autoload script
 "   - ingo/err.vim autoload script
+"   - ingo/escape/command.vim autoload script
 "
-" Copyright: (C) 2011-2014 Ingo Karkat
+" Copyright: (C) 2011-2015 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -13,6 +14,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.017	02-Mar-2015	The selectionModes argument may (in /{pattern}/
+"				form) contain special characters (e.g. "|" in
+"				/foo\|bar/) that need escaping in order to
+"				survive. Use ingo#escape#command#mapescape().
 "   1.24.016	13-Jun-2014	ENH: Allow optional [!] for made commands, and
 "				suppress the "Nothing transformed" error in that
 "				case. This can help when using the resulting
@@ -145,7 +150,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 	\   l:mappingName,
 	\   l:noopModificationCheck,
 	\   string(a:algorithm),
-	\   string(l:SelectionModes),
+	\   ingo#escape#command#mapescape(string(l:SelectionModes)),
 	\   string(l:repeatMappingName),
 	\   l:isRepeat
 	\)
