@@ -2,12 +2,13 @@
 "
 " DEPENDENCIES:
 "
-" Copyright: (C) 2011-2014 Ingo Karkat
+" Copyright: (C) 2011-2015 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.003	14-Mar-2015	Add TextTransform#Selections#EntireBuffer().
 "   1.22.002	06-Mar-2014	Add to TextTransform plugin.
 "	001	08-Mar-2011	file creation
 
@@ -35,6 +36,11 @@ endfunction
 
 function! TextTransform#Selections#QuotedInSingleLine()
     return TextTransform#Selections#SurroundedByCharsInSingleLine('''"')
+endfunction
+
+function! TextTransform#Selections#EntireBuffer()
+    execute "1normal! VG\<Esc>"
+    return 1
 endfunction
 
 " vim: set ts=8 sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
