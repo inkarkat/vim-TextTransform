@@ -19,6 +19,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.24.021	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
+"				custom transformation commands).
 "   1.23.020	08-May-2014	ENH: Support selection mode "/{pattern}/", which
 "				selects the text region under / after the cursor
 "				that matches {pattern}.
@@ -116,7 +118,7 @@ function! s:Error( onError, errorText )
 	call ingo#err#Set(a:errorText)
     endif
 endfunction
-function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments )
+function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, isBang )
     let l:isAlgorithmRepeat = (s:previousTransform.changedtick == a:changedtick &&
     \   type(s:previousTransform.algorithm) == type(a:algorithm) && s:previousTransform.algorithm ==# a:algorithm
     \)
@@ -126,6 +128,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments )
     \   'startPos': getpos("'<"),
     \   'endPos': getpos("'>"),
     \   'arguments': a:arguments,
+    \   'isBang': a:isBang,
     \   'isAlgorithmRepeat': l:isAlgorithmRepeat,
     \   'isRepeat': (l:isAlgorithmRepeat && s:repeatTick == a:changedtick)
     \}
@@ -141,7 +144,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments )
 	unlet g:TextTransformContext
     endtry
 endfunction
-function! s:Transform( count, algorithm, selectionModes, onError, mapMode, changedtick, arguments )
+function! s:Transform( count, algorithm, selectionModes, onError, mapMode, changedtick, arguments, isBang )
     let l:save_view = winsaveview()
     let l:save_cursor = getpos('.')
     let l:save_clipboard = &clipboard
@@ -204,7 +207,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 	call s:Error(a:onError, 'Not applicable here')
     else
 	let l:yankMode = getregtype('"')
-	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, @", a:mapMode, a:changedtick, a:arguments)
+	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, @", a:mapMode, a:changedtick, a:arguments, a:isBang)
 	if ! l:isSuccess
 	    call winrestview(l:save_view)
 	    if a:onError ==# 'beep'
@@ -289,7 +292,7 @@ endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
     let l:count = v:count1
-    if ! s:Transform(v:count, s:algorithm, a:selectionMode, 'beep', 'o', b:changedtick - (&l:readonly ? 1 : 0), []) " Need to subtract 1 from b:changedtick because of the no-op modification check (which here is conditional on 'readonly').
+    if ! s:Transform(v:count, s:algorithm, a:selectionMode, 'beep', 'o', b:changedtick - (&l:readonly ? 1 : 0), [], 0) " Need to subtract 1 from b:changedtick because of the no-op modification check (which here is conditional on 'readonly').
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
 	endif
@@ -308,7 +311,7 @@ endfunction
 function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping, isRepeat )
     let l:count = v:count1
     if ! a:isRepeat | let s:repeatTick = -1 | endif
-    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [])    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
 	endif
@@ -329,7 +332,7 @@ endfunction
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let l:count = v:count1
     if ! a:isRepeat | let s:repeatTick = -1 | endif
-    if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [])    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+    if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [], 0)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
 	endif
@@ -349,13 +352,13 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let s:repeatTick = b:changedtick
 endfunction
 
-function! TextTransform#Arbitrary#Command( firstLine, lastLine, count, algorithm, selectionModes, ... )
+function! TextTransform#Arbitrary#Command( firstLine, lastLine, isBang, count, algorithm, selectionModes, ... )
     let l:selectionMode = a:selectionModes
     if a:firstLine == line("'<") && a:lastLine == line("'>")
 	let l:selectionMode = visualmode()
     endif
 
-    let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1, a:000)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+    let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1, a:000, a:isBang)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 
     " Store the change number and algorithm so that we can detect a repeat of
     " the same substitution.
