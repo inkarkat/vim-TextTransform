@@ -3,6 +3,7 @@
 " This module is responsible for the transformation triggered by commands.
 "
 " DEPENDENCIES:
+"   - TextTransform.vim autoload script
 "   - ingo/lines.vim autoload script (for TextTransform#Lines#TransformWholeText())
 "   - ingo/range.vim autoload script
 "
@@ -14,6 +15,12 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.014	27-May-2015	Handle non-String results returned by the
+"				algorithm via TextTransform#ToText().
+"				When transforming individual lines and we get
+"				multiple lines as the algorithm's result,
+"				setline() cannot be used, and the added lines
+"				need to be accounted for.
 "   1.25.013	03-Feb-2015	FIX: Correctly handle command range of :. when
 "				on a closed fold. Need to use
 "				ingo#range#NetStart().
@@ -55,7 +62,7 @@ function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments,
     \   'isRepeat': a:isRepeat
     \}
     try
-	return call(a:algorithm, [a:text])
+	return TextTransform#ToText(call(a:algorithm, [a:text]))
     finally
 	unlet g:TextTransformContext
     endtry
@@ -67,9 +74,19 @@ function! TextTransform#Lines#TransformLinewise( startLnum, endLnum, isBang, alg
 	let l:text = getline(l:i)
 	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm, (l:i != a:startLnum), a:000, a:isBang)
 	if l:text !=# l:transformedText
-	    let l:lastModifiedLine = l:i
-	    let l:modifiedLineCnt += 1
-	    call setline(l:i, l:transformedText)
+	    if l:transformedText =~# '\n'
+		" We got multiple lines, cannot use setline(), as that will
+		" _replace_ following lines.
+		let l:lineNum = line('$')
+		    call ingo#lines#Replace(line('.'), line('.'), l:transformedText)  " ingo#lines#Replace() can take multi-line results as a newline-delimited String.
+		let l:addedLineNum = line('$') - l:lineNum
+		let l:lastModifiedLine = l:i + l:addedLineNum
+		let l:modifiedLineCnt += 1 + l:addedLineNum
+	    else
+		let l:lastModifiedLine = l:i
+		let l:modifiedLineCnt += 1
+		call setline(l:i, l:transformedText)
+	    endif
 	endif
     endfor
 
@@ -82,14 +99,17 @@ function! TextTransform#Lines#TransformWholeText( startLnum, endLnum, isBang, al
     let l:text = join(l:lines, "\n")
     let l:transformedText = s:Transform(a:startLnum, a:endLnum, l:text, a:algorithm, 0, a:000, a:isBang)
     if l:text !=# l:transformedText
-	call ingo#lines#Replace(a:startLnum, a:endLnum, l:transformedText)
+	let l:lineNum = line('$')
+	    call ingo#lines#Replace(a:startLnum, a:endLnum, l:transformedText)  " ingo#lines#Replace() can take multi-line results as a newline-delimited String.
+	let l:addedLineNum = line('$') - l:lineNum
+	let l:modifiedLineCnt += l:addedLineNum
 
 	" In this process function, we don't get the modification data for free,
 	" we have to generate the data ourselves. Fortunately, we still have to
 	" original lines to compare with the changed buffer.
 	for l:i in range(a:startLnum, a:endLnum)
 	    if getline(l:i) !=# l:lines[l:i - a:startLnum]
-		let l:lastModifiedLine = l:i
+		let l:lastModifiedLine = l:i + l:addedLineNum
 		let l:modifiedLineCnt += 1
 	    endif
 	endfor
