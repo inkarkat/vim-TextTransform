@@ -270,6 +270,8 @@ HISTORY						       *TextTransform-history*
 - FIX: Redefinition of l:SelectionModes inside loop (since 1.12) may cause
   "E705: Variable name conflicts with existing function" (in Vim 7.2.000).
   Move the variable definition out of the loop.
+- Don't apply TextTransform#Selections#SurroundedByCharsInSingleLine() when
+  [count] is given; skip to the next selectionMode then.
   *** You need to update to ingo-library (vimscript #4433) version 1.022! ***
 
 1.24	19-Jun-2014
