@@ -57,3 +57,7 @@ function! ContextMockTransform( text )
 
     return MyTransform(a:text)
 endfunction
+function! ContextArgumentsMockTransform( text )
+    call vimtap#Is(g:TextTransformContext.arguments, g:context.arguments, g:context.description)
+    return MyTransform(a:text)
+endfunction
