@@ -4,8 +4,9 @@
 "
 " DEPENDENCIES:
 "   - ingo/lines.vim autoload script (for TextTransform#Lines#TransformWholeText())
+"   - ingo/range.vim autoload script
 "
-" Copyright: (C) 2011-2014 Ingo Karkat
+" Copyright: (C) 2011-2015 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -13,6 +14,9 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.013	03-Feb-2015	FIX: Correctly handle command range of :. when
+"				on a closed fold. Need to use
+"				ingo#range#NetStart().
 "   1.25.012	23-Sep-2014	Minor: Remove debugging output when a command
 "				transforms whole lines.
 "   1.24.011	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
@@ -39,12 +43,12 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:previousAlgorithm = ''
-function! s:Transform( firstLine, lastLine, text, algorithm, isRepeat, arguments, isBang )
+function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments, isBang )
     let g:TextTransformContext = {
     \   'mapMode': 'c',
     \   'mode': 'V',
-    \   'startPos': [0, a:firstLine, 1, 0],
-    \   'endPos': [0, a:lastLine, 0x7FFFFFFF, 0],
+    \   'startPos': [0, a:startLnum, 1, 0],
+    \   'endPos': [0, a:endLnum, 0x7FFFFFFF, 0],
     \   'arguments': a:arguments,
     \   'isBang': a:isBang,
     \   'isAlgorithmRepeat': (type(s:previousAlgorithm) == type(a:algorithm) && s:previousAlgorithm ==# a:algorithm),
@@ -56,12 +60,12 @@ function! s:Transform( firstLine, lastLine, text, algorithm, isRepeat, arguments
 	unlet g:TextTransformContext
     endtry
 endfunction
-function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, isBang, algorithm, ... )
+function! TextTransform#Lines#TransformLinewise( startLnum, endLnum, isBang, algorithm, ... )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
 
-    for l:i in range(a:firstLine, a:lastLine)
+    for l:i in range(a:startLnum, a:endLnum)
 	let l:text = getline(l:i)
-	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm, (l:i != a:firstLine), a:000, a:isBang)
+	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm, (l:i != a:startLnum), a:000, a:isBang)
 	if l:text !=# l:transformedText
 	    let l:lastModifiedLine = l:i
 	    let l:modifiedLineCnt += 1
@@ -71,20 +75,20 @@ function! TextTransform#Lines#TransformLinewise( firstLine, lastLine, isBang, al
 
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
-function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, isBang, algorithm, ... )
+function! TextTransform#Lines#TransformWholeText( startLnum, endLnum, isBang, algorithm, ... )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
 
-    let l:lines = getline(a:firstLine, a:lastLine)
+    let l:lines = getline(a:startLnum, a:endLnum)
     let l:text = join(l:lines, "\n")
-    let l:transformedText = s:Transform(a:firstLine, a:lastLine, l:text, a:algorithm, 0, a:000, a:isBang)
+    let l:transformedText = s:Transform(a:startLnum, a:endLnum, l:text, a:algorithm, 0, a:000, a:isBang)
     if l:text !=# l:transformedText
-	call ingo#lines#Replace(a:firstLine, a:lastLine, l:transformedText)
+	call ingo#lines#Replace(a:startLnum, a:endLnum, l:transformedText)
 
 	" In this process function, we don't get the modification data for free,
 	" we have to generate the data ourselves. Fortunately, we still have to
 	" original lines to compare with the changed buffer.
-	for l:i in range(a:firstLine, a:lastLine)
-	    if getline(l:i) !=# l:lines[l:i - a:firstLine]
+	for l:i in range(a:startLnum, a:endLnum)
+	    if getline(l:i) !=# l:lines[l:i - a:startLnum]
 		let l:lastModifiedLine = l:i
 		let l:modifiedLineCnt += 1
 	    endif
@@ -93,17 +97,18 @@ function! TextTransform#Lines#TransformWholeText( firstLine, lastLine, isBang, a
 "****D echomsg '****' string( [l:lastModifiedLine, l:modifiedLineCnt])
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
-function! TextTransform#Lines#TransformCommand( firstLine, lastLine, isBang, algorithm, ProcessFunction, ... )
+function! TextTransform#Lines#TransformCommand( startLnum, endLnum, isBang, algorithm, ProcessFunction, ... )
+    let [l:startLnum, l:endLnum] = [ingo#range#NetStart(a:startLnum), ingo#range#NetEnd(a:endLnum)]
     try
-	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [a:firstLine, a:lastLine, a:isBang, a:algorithm] + a:000)
+	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [l:startLnum, l:endLnum, a:isBang, a:algorithm] + a:000)
 
 	unlet! s:previousAlgorithm | let s:previousAlgorithm = a:algorithm
 
 	if l:modifiedLineCnt > 0
 	    " Set change marks to the first columns of the range, like
 	    " :substitute does.
-	    call setpos("'[", [0, a:firstLine, 1, 0])
-	    call setpos("']", [0, a:lastLine, 1, 0])
+	    call setpos("'[", [0, l:startLnum, 1, 0])
+	    call setpos("']", [0, l:endLnum, 1, 0])
 
 	    " Move the cursor to the first non-blank character of the last
 	    " modified line, like :substitute does.
