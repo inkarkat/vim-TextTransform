@@ -14,6 +14,11 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.018	21-Mar-2015	FIX: Redefinition of l:SelectionModes inside
+"				loop (since 1.12) may cause "E705: Variable name
+"				conflicts with existing function" (in Vim
+"				7.2.000). Move the variable definition out of
+"				the loop.
 "   1.25.017	02-Mar-2015	The selectionModes argument may (in /{pattern}/
 "				form) contain special characters (e.g. "|" in
 "				/foo\|bar/) that need escaping in order to
@@ -106,6 +111,8 @@ function! s:After()
 endfunction
 nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
 function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
+    let l:SelectionModes = (a:0 ? a:1 : 'lines')
+
     " This will cause "E474: Invalid argument" if the mapping name gets too long.
     let l:algorithmMappingName = (
     \	type(a:algorithm) == type('') ?
@@ -144,7 +151,6 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 	\   l:mappingName
 	\)
 
-	let l:SelectionModes = (a:0 ? a:1 : 'lines')
 	execute printf('nnoremap <silent> %s <Plug>%sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s, %d)<CR>',
 	\   a:mapArgs,
 	\   l:mappingName,
