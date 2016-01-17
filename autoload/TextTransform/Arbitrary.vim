@@ -3,6 +3,7 @@
 " This module is responsible for the transformation triggered by mappings.
 "
 " DEPENDENCIES:
+"   - TextTransform.vim autoload script
 "   - ingo/compat.vim autoload script
 "   - ingo/err.vim autoload script
 "   - ingo/list.vim autoload script
@@ -11,7 +12,7 @@
 "   - repeat.vim (vimscript #2136) autoload script (optional)
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional)
 "
-" Copyright: (C) 2011-2014 Ingo Karkat
+" Copyright: (C) 2011-2015 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -19,6 +20,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.022	27-May-2015	Handle non-String results returned by the
+"				algorithm via TextTransform#ToText().
 "   1.24.021	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
 "				custom transformation commands).
 "   1.23.020	08-May-2014	ENH: Support selection mode "/{pattern}/", which
@@ -133,7 +136,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, is
     \   'isRepeat': (l:isAlgorithmRepeat && s:repeatTick == a:changedtick)
     \}
     try
-	return [1, call(a:algorithm, [a:text])]
+	return [1, TextTransform#ToText(call(a:algorithm, [a:text]))]
     catch /^Vim\%((\a\+)\)\=:/
 	call ingo#err#SetVimException()
 	return [0, '']
