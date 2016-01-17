@@ -272,6 +272,19 @@ HISTORY						       *TextTransform-history*
   Move the variable definition out of the loop.
 - Don't apply TextTransform#Selections#SurroundedByCharsInSingleLine() when
   [count] is given; skip to the next selectionMode then.
+- Handle non-String results returned by the algorithm via
+  TextTransform#ToText().
+- When transforming individual lines and we get multiple lines as the
+  algorithm's result, setline() cannot be used; instead, use
+  ingo#lines#Replace().
+- When transforming individual or whole lines and we get multiple / additional
+  lines as the algorithm's result, these need to be accounted for, for cursor
+  positioning and reporting.
+- Add TextTransform#ToText() to handle non-String results returned by the
+  algorithm. Floats need to be explicitly converted; Lists should be
+  flattened, too, to yield correct results for the modification check with the
+  original text. Dicts and Funcrefs should not be returned and cause an
+  exception.
   *** You need to update to ingo-library (vimscript #4433) version 1.022! ***
 
 1.24	19-Jun-2014
