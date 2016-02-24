@@ -19,11 +19,6 @@ let g:context = {'description': 'multiple arguments', 'arguments': ['foo', 'bar'
 let g:context = {'description': 'no arguments possible', 'arguments': []}
 8TransformAnother
 
-try
-    9TransformAnother foo bar
-    call vimtap#Fail('expected E488')
-catch
-    call vimtap#err#ThrownLike('^E488:', 'exception thrown')
-endtry
+call vimtap#err#ErrorsLike('^E488: ', '9TransformAnother foo bar', 'exception thrown')
 
 call vimtest#Quit()
