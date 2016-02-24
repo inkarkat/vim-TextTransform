@@ -1,27 +1,27 @@
 single line
 
-mode v from [0, 2, 1, 0] to [0, 2, 35, 0]
+mapMode 'n', mode v from [0, 2, 1, 0] to [0, 2, 35, 0]
 
 character motion
 
-mode v from [0, 2, 15, 0] to [0, 2, 29, 0]
+mapMode 'o', mode v from [0, 2, 15, 0] to [0, 2, 29, 0]
 
 line motion
 
-mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0]
+mapMode 'o', mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0]
 
 visual characterwise selection
 
-mode v from [0, 2, 15, 0] to [0, 2, 29, 0]
+mapMode 'v', mode v from [0, 2, 15, 0] to [0, 2, 29, 0]
 
 visual linewise selection
 
-mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0]
+mapMode 'v', mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0]
 
 visual blockwise selection
 
-mode ^V from [0, 2, 15, 0] to [0, 3, 19, 0]
+mapMode 'v', mode ^V from [0, 2, 15, 0] to [0, 3, 19, 0]
 
 visual blockwise selection to end
 
-mode ^V from [0, 2, 15, 0] to [0, 3, 26, 0]
+mapMode 'v', mode ^V from [0, 2, 15, 0] to [0, 3, 26, 0]
