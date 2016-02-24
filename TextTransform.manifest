@@ -1,4 +1,5 @@
 autoload/TextTransform.vim
 autoload/TextTransform/Arbitrary.vim
 autoload/TextTransform/Lines.vim
+autoload/TextTransform/Selections.vim
 doc/TextTransform.txt
