@@ -1,0 +1,11 @@
+partial transform
+^e says: "XXX quick brown fox jumps
+#ver XXX 'lazy dog'. "No,
+$lease!" he yelled
+
+full transform
+^X|XXXX?|?XXX|XXXXX|XXXXX|XXX|XXXXX
+XXXX|XXX|?XXXX|XXX??|?XX?
+$XXXXX??|XX|XXXXXX
+
+
