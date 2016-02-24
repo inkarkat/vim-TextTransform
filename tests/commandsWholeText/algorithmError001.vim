@@ -9,12 +9,7 @@ call vimtap#Plan(1)
 let g:teststep = 'all lines'
 call InsertExampleMultilineText(g:teststep)
 normal! gg$
-try
-    2,4TransformIt
-    call vimtap#Fail('expected error when ' . g:teststep)
-catch
-    call vimtap#err#Thrown("TextTransform: This won't work", 'Algorithm error shown')
-endtry
+call vimtap#err#Errors("TextTransform: This won't work", '2,4TransformIt', 'Algorithm error shown')
 normal! i#
 
 
