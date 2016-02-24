@@ -1,0 +1,18 @@
+He said, In the 80's, Dan Duckling Dock Diestle won the world wrestling record left-handed.
+He said, In the 80's, Dan "P" Duckling Dock Diestle ''won the world wrestling record left-handed.
+" He said, In the 80's, Dan Duckling Dock Diestle won the world wrestling record left-handed.
+" He said, In the 80's, Dan Duckling Dock Diestle won the world wrestling record left-handed.
+" He said, In the 80's, Dan "Duckling Dock" Diestle won the world wrestling record left-handed.
+' He said, In the 80's, Dan 'Duckling Dock' Diestle won the world wrestling record left-handed.
+" He said, 'In the 80s, Dan "Duckling Dock" Diestle won the world wrestling record left-handed.'
+" He said, "In the 80's, Dan 'Duckling Dock' Diestle won the world wrestling record left-handed."
+" He said, 'In the 80's, Dan "Duckling Dock" Diestle won the world wrestling record left-handed.'
+" He said, "In the 80's, Dan 'Duckling Dock' Diestle won the world wrestling record left-handed."
+
+c:\Program Files\Vim\vim72\gvim.exe
+'c:\Program Files\Vim\vim72\gvim.exe'
+"c:\Program Files\Vim\vim72\gvim.exe"
+c:\Program Files\Microsoft Office\Office12\Office Outlook Time Zone Data Update Tool\TZMOVE.EXE
+'c:\Program Files\Microsoft Office\Office12\Office Outlook Time Zone Data Update Tool\TZMOVE.EXE'
+"c:\Program Files\Microsoft Office\Office12\Office Outlook Time Zone Data Update Tool\TZMOVE.EXE"
+
