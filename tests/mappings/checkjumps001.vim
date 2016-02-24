@@ -1,47 +1,14 @@
-" Test final cursor position after mappings.
+" Test that the transformation does not affect the jump list.
 
 call TextTransform#MakeMappings('', '<Leader>sU', 'MyTransform')
 
 
-call InsertExampleMultilineText('single line')
-normal \sUU
-normal! r*
-
 call InsertExampleMultilineText('character motion')
+global/^$/call setline('.', '_')
+normal! ggG
+normal! 2G03W
 normal \sU3e
-normal! r*
-
-call InsertExampleMultilineText('line motion')
-normal \sU+
-normal! r*
-
-call InsertExampleMultilineText('visual characterwise selection')
-normal v3e\sU
-normal! r*
-
-call InsertExampleMultilineText('visual characterwise selection from opposite')
-normal v3eo\sU
-normal! r*
-
-call InsertExampleMultilineText('visual linewise selection')
-normal Vj\sU
-normal! r*
-
-call InsertExampleMultilineText('visual linewise selection from opposite')
-normal Vjo\sU
-normal! r*
-
-call InsertExampleMultilineText('visual blockwise selection')
-execute "normal \<C-V>ej\\sU"
-normal! r*
-
-call InsertExampleMultilineText('visual blockwise selection from opposite')
-execute "normal \<C-V>ejo\\sU"
-normal! r*
-
-call InsertExampleMultilineText('visual blockwise selection to end')
-execute "normal \<C-V>$j\\sU"
-normal! r*
+execute "normal! jj\<C-o>r1\<C-o>r2"
 
 
 call vimtest#SaveOut()
