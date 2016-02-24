@@ -3,7 +3,7 @@
 " Tests that a beep occurs. 
 
 call TextTransform#MakeMappings('', '<Leader>sU', 'BadTransform')
-nmap <Plug>RingTheBell :<C-u>echomsg 'beep:' g:teststep<CR>
+source helpers/hookIntoError.vim
 
 
 let g:teststep = 'single line'
