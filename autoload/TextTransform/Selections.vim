@@ -8,11 +8,19 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.004	26-Mar-2015	Don't apply
+"				TextTransform#Selections#SurroundedByCharsInSingleLine()
+"				when [count] is given; skip to the next
+"				selectionMode then.
 "   1.25.003	14-Mar-2015	Add TextTransform#Selections#EntireBuffer().
 "   1.22.002	06-Mar-2014	Add to TextTransform plugin.
 "	001	08-Mar-2011	file creation
 
 function! TextTransform#Selections#SurroundedByCharsInSingleLine( chars )
+    if v:count
+	return 0    | " This doesn't handle [count], so skip when one is given.
+    endif
+
     " Cursor must be inside (not on!) one of the characters in a:chars.
     let l:surroundPattern = '^.*\zs\([' . a:chars . ']\)\%(\1\@!.\)\{-}\%#\%(\1\@!.\)\{1,}\1\ze.*$'
 
