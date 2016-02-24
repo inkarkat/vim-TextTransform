@@ -1,7 +1,7 @@
 " Test error beep due to no selection. 
 
 call TextTransform#MakeMappings('', '<Leader>sU', 'MyTransform', "i'")
-nmap <Plug>RingTheBell :<C-u>echomsg 'beep:' g:teststep<CR>
+source helpers/hookIntoError.vim
 
 
 let g:teststep = 'outside of single quotes'
