@@ -1,0 +1,13 @@
+original
+He said, <q>'In the 80's, Dan "Duckling Dock" Diestle won the world wrestling record' "left-handed".</q>
+
+line
+XX|XXXX?|?X??XX|XXX|???X?|XXX|?XXXXXXXX|XXXX?|XXXXXXX|XXX|XXX|XXXXX|XXXXXXXXX|XXXXXX?|?XXXX?XXXXXX????X?
+
+inner double quotes
+He said, <q>'In the 80's, Dan "Duckling Dock" Diestle won the world wrestling record' "XXXX?XXXXXX".</q>
+
+inner single quotes
+He said, <q>'XX|XXX|??'s, Dan "Duckling Dock" Diestle won the world wrestling record' "left-handed".</q>
+
+
