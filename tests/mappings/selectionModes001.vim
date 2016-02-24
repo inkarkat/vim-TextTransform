@@ -1,4 +1,4 @@
-" Test all built-in selection modes. 
+" Test all built-in selection modes.
 
 call TextTransform#MakeMappings('', '<Leader>sU', 'MyTransform')
 
@@ -20,6 +20,9 @@ normal Vj\sU
 
 call InsertExampleMultilineText('visual blockwise selection')
 execute "normal \<C-V>ej\\sU"
+
+call InsertExampleMultilineText('visual blockwise selection to end')
+execute "normal \<C-V>$j\\sU"
 
 
 call vimtest#SaveOut()
