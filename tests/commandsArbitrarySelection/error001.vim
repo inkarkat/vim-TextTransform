@@ -9,32 +9,17 @@ call vimtap#Plan(3)
 let g:teststep = 'outside of single quotes'
 call InsertExampleText(g:teststep)
 normal! $
-try
-    TransformIt
-    call vimtap#Fail('expected error when ' . g:teststep)
-catch
-    call vimtap#err#Thrown('Not applicable here', 'Not applicable error shown')
-endtry
+call vimtap#err#Errors('Not applicable here', 'TransformIt', 'Not applicable error shown')
 
 let g:teststep = 'empty single quotes'
 call InsertExampleText(g:teststep)
 normal! 0di'
-try
-    TransformIt
-    call vimtap#Fail('expected error when ' . g:teststep)
-catch
-    call vimtap#err#Thrown('Not applicable here', 'Not applicable error shown')
-endtry
+call vimtap#err#Errors('Not applicable here', 'TransformIt', 'Not applicable error shown')
 
 let g:teststep = 'empty line'
 call InsertExampleText(g:teststep)
 normal! dd
-try
-    TransformIt
-    call vimtap#Fail('expected error when ' . g:teststep)
-catch
-    call vimtap#err#Thrown('Not applicable here', 'Not applicable error shown')
-endtry
+call vimtap#err#Errors('Not applicable here', 'TransformIt', 'Not applicable error shown')
 
 
 call vimtest#SaveOut()
