@@ -1,4 +1,4 @@
-" Test commands on visual modes. 
+" Test commands on visual modes.
 
 call TextTransform#MakeSelectionCommand('', 'TransformIt', 'MyTransform', 'aw')
 
@@ -11,6 +11,9 @@ execute "normal! Vj:TransformIt\<CR>"
 
 call InsertExampleMultilineText('visual blockwise selection')
 execute "normal! \<C-V>ej:TransformIt\<CR>"
+
+call InsertExampleMultilineText('visual blockwise selection to end')
+execute "normal! \<C-V>$j:TransformIt\<CR>"
 
 
 call vimtest#SaveOut()
