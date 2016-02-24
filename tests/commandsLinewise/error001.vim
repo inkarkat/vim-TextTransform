@@ -9,12 +9,7 @@ call vimtap#Plan(1)
 let g:teststep = 'many lines'
 call InsertExampleMultilineText(g:teststep)
 normal! gg$
-try
-    2,4TransformIt
-    call vimtap#Fail('expected error when ' . g:teststep)
-catch
-    call vimtap#err#Thrown('Nothing transformed', 'Nothing transformed error shown')
-endtry
+call vimtap#err#Errors('Nothing transformed', '2,4TransformIt', 'Nothing transformed error shown')
 normal! i#
 
 call vimtest#SaveOut()
