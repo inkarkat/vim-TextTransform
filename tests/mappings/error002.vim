@@ -1,7 +1,7 @@
 " Test error beep due to no transformation. 
 
 call TextTransform#MakeMappings('', '<Leader>sU', 'NoTransform')
-nmap <Plug>RingTheBell :<C-u>echomsg 'beep:' g:teststep<CR>
+source helpers/hookIntoError.vim
 
 
 let g:teststep = 'single line'
