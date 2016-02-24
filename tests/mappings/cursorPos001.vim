@@ -39,6 +39,10 @@ call InsertExampleMultilineText('visual blockwise selection from opposite')
 execute "normal \<C-V>ejo\\sU"
 normal! r*
 
+call InsertExampleMultilineText('visual blockwise selection to end')
+execute "normal \<C-V>$j\\sU"
+normal! r*
+
 
 call vimtest#SaveOut()
 call vimtest#Quit()
