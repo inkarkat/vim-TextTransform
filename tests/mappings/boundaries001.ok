@@ -1,0 +1,65 @@
+exclusive visual blockwise selection
+he says: "the [quick brown fox jumps
+over the 'lazy dog']. "No,
+please!" he yelled
+
+exclusive visual linewise selection
+[he says: "the quick brown fox jumps
+over the 'lazy dog'. "No,
+]
+please!" he yelled
+
+exclusive visual characterwise selection
+he says: "the [quick brown fox] jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+exclusive line motion
+[he says: "the quick brown fox jumps
+over the 'lazy dog'. "No,
+]
+please!" he yelled
+
+exclusive character motion
+he says: "the [quick brown fox] jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+exclusive single line
+[he says: "the quick brown fox jumps]
+over the 'lazy dog'. "No,
+please!" he yelled
+
+inclusive visual blockwise selection
+he says: "the [quick brown fox jumps
+over the 'lazy dog']. "No,
+please!" he yelled
+
+inclusive visual linewise selection
+[he says: "the quick brown fox jumps
+over the 'lazy dog'. "No,
+]
+please!" he yelled
+
+inclusive visual characterwise selection
+he says: "the [quick brown fox] jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+inclusive line motion
+[he says: "the quick brown fox jumps
+over the 'lazy dog'. "No,
+]
+please!" he yelled
+
+inclusive character motion
+he says: "the [quick brown fox] jumps
+over the 'lazy dog'. "No,
+please!" he yelled
+
+inclusive single line
+[he says: "the quick brown fox jumps]
+over the 'lazy dog'. "No,
+please!" he yelled
+
+
