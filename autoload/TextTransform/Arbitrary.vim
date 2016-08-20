@@ -12,7 +12,7 @@
 "   - repeat.vim (vimscript #2136) autoload script (optional)
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional)
 "
-" Copyright: (C) 2011-2015 Ingo Karkat
+" Copyright: (C) 2011-2016 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -20,6 +20,14 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.023	18-Jan-2016	Pass v:count, not v:count1 to
+"				[visual]repeat.vim; this matters when using
+"				TextTransform#Selections#SurroundedByCharsInSingleLine(),
+"				which doesn't handle a count. I noticed when
+"				repeating a substitution that has lineTypes of
+"				[quoted, lines], and it would apply to the
+"				entire line, not the quoted text the cursor was
+"				on.
 "   1.25.022	27-May-2015	Handle non-String results returned by the
 "				algorithm via TextTransform#ToText().
 "   1.24.021	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
@@ -294,7 +302,7 @@ function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
 endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
-    let l:count = v:count1
+    let l:count = v:count
     if ! s:Transform(v:count, s:algorithm, a:selectionMode, 'beep', 'o', b:changedtick - (&l:readonly ? 1 : 0), [], 0) " Need to subtract 1 from b:changedtick because of the no-op modification check (which here is conditional on 'readonly').
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
@@ -312,7 +320,7 @@ function! TextTransform#Arbitrary#Opfunc( selectionMode )
 endfunction
 
 function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping, isRepeat )
-    let l:count = v:count1
+    let l:count = v:count
     if ! a:isRepeat | let s:repeatTick = -1 | endif
     if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
@@ -333,7 +341,7 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
 endfunction
 
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
-    let l:count = v:count1
+    let l:count = v:count
     if ! a:isRepeat | let s:repeatTick = -1 | endif
     if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [], 0)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
