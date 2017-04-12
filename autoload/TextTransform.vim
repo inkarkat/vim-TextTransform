@@ -14,6 +14,13 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.019	27-May-2015	Add TextTransform#ToText() to handle non-String
+"				results returned by the algorithm. Floats need
+"				to be explicitly converted; Lists should be
+"				flattened, too, to yield correct results for the
+"				modification check with the original text. Dicts
+"				and Funcrefs should not be returned and cause an
+"				exception.
 "   1.25.018	21-Mar-2015	FIX: Redefinition of l:SelectionModes inside
 "				loop (since 1.12) may cause "E705: Variable name
 "				conflicts with existing function" (in Vim
@@ -204,6 +211,20 @@ function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algor
     \	string(a:algorithm),
     \	string(a:selectionModes)
     \)
+endfunction
+
+function! TextTransform#ToText( expr )
+    if type(a:expr) == type('')
+	return a:expr
+    elseif type(a:expr) == type(0)
+	return a:expr
+    elseif type(a:expr) == type(0.0)
+	return printf('%g', a:expr)   " Need to explicitly convert Float to avoid E806: using Float as a String
+    elseif type(a:expr) == type([])
+	return join(a:expr, "\n")   " Render List as String to yield correct results for the modification check with the original text. The actual required format for multi-line results depends on the further processing.
+    else
+	throw 'unsupported algorithm result type: ' . type(a:expr)
+    endif
 endfunction
 
 " vim: set ts=8 sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
