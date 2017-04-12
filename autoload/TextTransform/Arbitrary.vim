@@ -20,6 +20,9 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.024	21-Aug-2016	FIX: Do not attempt to restore empty visual
+"				mode, as this results in a beep; this can happen
+"				when no visual selection wasn't done yet.
 "   1.25.023	18-Jan-2016	Pass v:count, not v:count1 to
 "				[visual]repeat.vim; this matters when using
 "				TextTransform#Selections#SurroundedByCharsInSingleLine(),
@@ -269,7 +272,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 	endif
     endif
 
-    if visualmode() !=# l:save_visualarea[0]
+    if visualmode() !=# l:save_visualarea[0] && ! empty(l:save_visualarea[0])
 	execute 'normal!' l:save_visualarea[0] . "\<Esc>"
     endif
     call ingo#compat#setpos("'<", l:save_visualarea[1])
