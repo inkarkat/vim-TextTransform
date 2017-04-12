@@ -33,6 +33,9 @@ endfunction
 function! BadTransform( text )
     throw "This won't work"
 endfunction
+function! CannedTransform( text )
+    return g:Canned
+endfunction
 function! ContextEcho( text )
     echomsg printf('mapMode %s, mode %s from %s to %s', string(g:TextTransformContext.mapMode), strtrans(g:TextTransformContext.mode), string(g:TextTransformContext.startPos), string(g:TextTransformContext.endPos))
     return MarkBoundaries(a:text)
