@@ -6,7 +6,7 @@
 "   - ingo/err.vim autoload script
 "   - ingo/escape/command.vim autoload script
 "
-" Copyright: (C) 2011-2015 Ingo Karkat
+" Copyright: (C) 2011-2017 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -194,7 +194,7 @@ endfunction
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
     let l:options = (a:0 ? a:1 : {})
-    execute printf('command! -bar -bang %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Lines#TransformCommand(<line1>, <line2>, <bang>0, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
+    execute printf('command! -bar -bang %s %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Lines#TransformCommand(<line1>, <line2>, <bang>0, <q-register>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
     \	a:commandOptions,
     \	(a:commandOptions =~# '\%(^\|\s\)-range\%(=\|\s\)' ? '' : '-range'),
     \	a:commandName,
@@ -205,7 +205,7 @@ endfunction
 
 
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
-    execute printf('command -bar -bang -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <bang>0, <count>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
+    execute printf('command -bar -bang -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <bang>0, <q-register>, <count>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
     \	a:commandOptions,
     \	a:commandName,
     \	string(a:algorithm),
