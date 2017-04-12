@@ -14,6 +14,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.020	13-Apr-2017	Handle register: Pass on in <SID>Reselect.
 "   1.25.019	27-May-2015	Add TextTransform#ToText() to handle non-String
 "				results returned by the algorithm. Floats need
 "				to be explicitly converted; Lists should be
@@ -116,7 +117,7 @@ function! s:After()
     endif
     unlet s:isModified
 endfunction
-nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '')
+nnoremap <expr> <SID>Reselect '1v' . (visualmode() !=# 'V' && &selection ==# 'exclusive' ? ' ' : '') . '"' . v:register
 function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
     let l:SelectionModes = (a:0 ? a:1 : 'lines')
 
