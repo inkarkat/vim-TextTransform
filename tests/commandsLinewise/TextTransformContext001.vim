@@ -1,28 +1,28 @@
 " Test the context object.
 
-call TextTransform#MakeCommand('', 'TransformIt', 'ContextMockTransform')
+call TextTransform#MakeCommand('-bang -nargs=*', 'TransformIt', 'ContextMockTransform')
 call TextTransform#MakeCommand('', 'TransformAnother', 'MyTransform')
 
 
 call vimtest#StartTap()
-call vimtap#Plan(36)
+call vimtap#Plan(48)
 
 call InsertExampleText('all text', 10)
 let g:context = [
-\   {'description': 'lines', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'isAlgorithmRepeat': 0, 'isRepeat': 0},
-\   {'description': 'lines', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'isAlgorithmRepeat': 0, 'isRepeat': 1},
-\   {'description': 'lines', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'isAlgorithmRepeat': 0, 'isRepeat': 1}
+\   {'description': 'lines', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'arguments': ['foo', 'bar'], 'isBang': 0, 'isAlgorithmRepeat': 0, 'isRepeat': 0},
+\   {'description': 'lines', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'arguments': ['foo', 'bar'], 'isBang': 0, 'isAlgorithmRepeat': 0, 'isRepeat': 1},
+\   {'description': 'lines', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'arguments': ['foo', 'bar'], 'isBang': 0, 'isAlgorithmRepeat': 0, 'isRepeat': 1}
 \]
-2,4TransformIt
+2,4TransformIt foo bar
 
 let g:context = [
-\   {'description': 'lines again', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'isAlgorithmRepeat': 1, 'isRepeat': 0},
-\   {'description': 'lines again', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'isAlgorithmRepeat': 1, 'isRepeat': 1}
+\   {'description': 'lines again', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'arguments': ['gaga'], 'isBang': 1, 'isAlgorithmRepeat': 1, 'isRepeat': 0},
+\   {'description': 'lines again', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'arguments': ['gaga'], 'isBang': 1, 'isAlgorithmRepeat': 1, 'isRepeat': 1}
 \]
-6,7TransformIt
+6,7TransformIt! gaga
 
 
-let g:context = {'description': 'lines after another algorithm', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'isAlgorithmRepeat': 0, 'isRepeat': 0}
+let g:context = {'description': 'lines after another algorithm', 'mapMode': 'c', 'mode': 'V', 'startPos': 1, 'endPos': 0x7FFFFFFF, 'arguments': [], 'isBang': 0, 'isAlgorithmRepeat': 0, 'isRepeat': 0}
 9TransformAnother
 10TransformIt
 
