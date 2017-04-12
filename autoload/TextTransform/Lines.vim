@@ -19,8 +19,12 @@
 "				algorithm via TextTransform#ToText().
 "				When transforming individual lines and we get
 "				multiple lines as the algorithm's result,
-"				setline() cannot be used, and the added lines
-"				need to be accounted for.
+"				setline() cannot be used; instead, use
+"				ingo#lines#Replace().
+"				When transforming individual or whole lines and
+"				we get multiple / additional lines as the
+"				algorithm's result, these need to be accounted
+"				for, for cursor positioning and reporting.
 "   1.25.013	03-Feb-2015	FIX: Correctly handle command range of :. when
 "				on a closed fold. Need to use
 "				ingo#range#NetStart().
@@ -68,24 +72,26 @@ function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments,
     endtry
 endfunction
 function! TextTransform#Lines#TransformLinewise( startLnum, endLnum, isBang, algorithm, ... )
-    let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
+    let [l:lastModifiedLine, l:modifiedLineCnt, l:offset] = [0, 0, 0]
 
     for l:i in range(a:startLnum, a:endLnum)
-	let l:text = getline(l:i)
-	let l:transformedText = s:Transform(l:i, l:i, l:text, a:algorithm, (l:i != a:startLnum), a:000, a:isBang)
+	let l:text = getline(l:i + l:offset)
+	let l:transformedText = s:Transform(l:i + l:offset, l:i + l:offset, l:text, a:algorithm, (l:i != a:startLnum), a:000, a:isBang)
 	if l:text !=# l:transformedText
 	    if l:transformedText =~# '\n'
 		" We got multiple lines, cannot use setline(), as that will
 		" _replace_ following lines.
 		let l:lineNum = line('$')
-		    call ingo#lines#Replace(line('.'), line('.'), l:transformedText)  " ingo#lines#Replace() can take multi-line results as a newline-delimited String.
+		    call ingo#lines#Replace(l:i + l:offset, l:i + l:offset, l:transformedText)  " ingo#lines#Replace() can take multi-line results as a newline-delimited String.
 		let l:addedLineNum = line('$') - l:lineNum
-		let l:lastModifiedLine = l:i + l:addedLineNum
+
+		let l:lastModifiedLine = l:i + l:offset + l:addedLineNum
 		let l:modifiedLineCnt += 1 + l:addedLineNum
+		let l:offset += l:addedLineNum
 	    else
-		let l:lastModifiedLine = l:i
+		let l:lastModifiedLine = l:i + l:offset
 		let l:modifiedLineCnt += 1
-		call setline(l:i, l:transformedText)
+		call setline(l:i + l:offset, l:transformedText)
 	    endif
 	endif
     endfor
