@@ -288,6 +288,8 @@ HISTORY						       *TextTransform-history*
 - Pass v:count, not v:count1 to (visual)repeat.vim; this matters when using
   TextTransform#Selections#SurroundedByCharsInSingleLine(), which doesn't
   handle a count.
+- FIX: Do not attempt to restore empty visual mode, as this results in a beep;
+  this can happen when no visual selection wasn't done yet.
   *** You need to update to ingo-library (vimscript #4433) version 1.022! ***
 
 1.24	19-Jun-2014
