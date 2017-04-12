@@ -7,7 +7,7 @@
 "   - ingo/lines.vim autoload script (for TextTransform#Lines#TransformWholeText())
 "   - ingo/range.vim autoload script
 "
-" Copyright: (C) 2011-2015 Ingo Karkat
+" Copyright: (C) 2011-2017 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -15,6 +15,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.015	13-Apr-2017	ENH: Add g:TextTransformContext.register.
 "   1.25.014	27-May-2015	Handle non-String results returned by the
 "				algorithm via TextTransform#ToText().
 "				When transforming individual lines and we get
@@ -54,7 +55,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:previousAlgorithm = ''
-function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments, isBang )
+function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments, isBang, register )
     let g:TextTransformContext = {
     \   'mapMode': 'c',
     \   'mode': 'V',
@@ -62,6 +63,7 @@ function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments,
     \   'endPos': [0, a:endLnum, 0x7FFFFFFF, 0],
     \   'arguments': a:arguments,
     \   'isBang': a:isBang,
+    \   'register': a:register,
     \   'isAlgorithmRepeat': (type(s:previousAlgorithm) == type(a:algorithm) && s:previousAlgorithm ==# a:algorithm),
     \   'isRepeat': a:isRepeat
     \}
@@ -71,12 +73,12 @@ function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments,
 	unlet g:TextTransformContext
     endtry
 endfunction
-function! TextTransform#Lines#TransformLinewise( startLnum, endLnum, isBang, algorithm, ... )
+function! TextTransform#Lines#TransformLinewise( startLnum, endLnum, isBang, register, algorithm, ... )
     let [l:lastModifiedLine, l:modifiedLineCnt, l:offset] = [0, 0, 0]
 
     for l:i in range(a:startLnum, a:endLnum)
 	let l:text = getline(l:i + l:offset)
-	let l:transformedText = s:Transform(l:i + l:offset, l:i + l:offset, l:text, a:algorithm, (l:i != a:startLnum), a:000, a:isBang)
+	let l:transformedText = s:Transform(l:i + l:offset, l:i + l:offset, l:text, a:algorithm, (l:i != a:startLnum), a:000, a:isBang, a:register)
 	if l:text !=# l:transformedText
 	    if l:transformedText =~# '\n'
 		" We got multiple lines, cannot use setline(), as that will
@@ -98,12 +100,12 @@ function! TextTransform#Lines#TransformLinewise( startLnum, endLnum, isBang, alg
 
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
-function! TextTransform#Lines#TransformWholeText( startLnum, endLnum, isBang, algorithm, ... )
+function! TextTransform#Lines#TransformWholeText( startLnum, endLnum, isBang, register, algorithm, ... )
     let [l:lastModifiedLine, l:modifiedLineCnt] = [0, 0]
 
     let l:lines = getline(a:startLnum, a:endLnum)
     let l:text = join(l:lines, "\n")
-    let l:transformedText = s:Transform(a:startLnum, a:endLnum, l:text, a:algorithm, 0, a:000, a:isBang)
+    let l:transformedText = s:Transform(a:startLnum, a:endLnum, l:text, a:algorithm, 0, a:000, a:isBang, a:register)
     if l:text !=# l:transformedText
 	let l:lineNum = line('$')
 	    call ingo#lines#Replace(a:startLnum, a:endLnum, l:transformedText)  " ingo#lines#Replace() can take multi-line results as a newline-delimited String.
@@ -123,10 +125,10 @@ function! TextTransform#Lines#TransformWholeText( startLnum, endLnum, isBang, al
 "****D echomsg '****' string( [l:lastModifiedLine, l:modifiedLineCnt])
     return [l:lastModifiedLine, l:modifiedLineCnt]
 endfunction
-function! TextTransform#Lines#TransformCommand( startLnum, endLnum, isBang, algorithm, ProcessFunction, ... )
+function! TextTransform#Lines#TransformCommand( startLnum, endLnum, isBang, register, algorithm, ProcessFunction, ... )
     let [l:startLnum, l:endLnum] = [ingo#range#NetStart(a:startLnum), ingo#range#NetEnd(a:endLnum)]
     try
-	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [l:startLnum, l:endLnum, a:isBang, a:algorithm] + a:000)
+	let [l:lastModifiedLine, l:modifiedLineCnt] = call(a:ProcessFunction, [l:startLnum, l:endLnum, a:isBang, a:register, a:algorithm] + a:000)
 
 	unlet! s:previousAlgorithm | let s:previousAlgorithm = a:algorithm
 
