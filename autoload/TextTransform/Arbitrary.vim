@@ -12,7 +12,7 @@
 "   - repeat.vim (vimscript #2136) autoload script (optional)
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional)
 "
-" Copyright: (C) 2011-2016 Ingo Karkat
+" Copyright: (C) 2011-2017 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -20,6 +20,7 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.025	13-Apr-2017	ENH: Add g:TextTransformContext.register.
 "   1.25.024	21-Aug-2016	FIX: Do not attempt to restore empty visual
 "				mode, as this results in a beep; this can happen
 "				when no visual selection wasn't done yet.
@@ -132,7 +133,7 @@ function! s:Error( onError, errorText )
 	call ingo#err#Set(a:errorText)
     endif
 endfunction
-function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, isBang )
+function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, isBang, register )
     let l:isAlgorithmRepeat = (s:previousTransform.changedtick == a:changedtick &&
     \   type(s:previousTransform.algorithm) == type(a:algorithm) && s:previousTransform.algorithm ==# a:algorithm
     \)
@@ -143,6 +144,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, is
     \   'endPos': getpos("'>"),
     \   'arguments': a:arguments,
     \   'isBang': a:isBang,
+    \   'register': a:register,
     \   'isAlgorithmRepeat': l:isAlgorithmRepeat,
     \   'isRepeat': (l:isAlgorithmRepeat && s:repeatTick == a:changedtick)
     \}
@@ -158,7 +160,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, is
 	unlet g:TextTransformContext
     endtry
 endfunction
-function! s:Transform( count, algorithm, selectionModes, onError, mapMode, changedtick, arguments, isBang )
+function! s:Transform( count, algorithm, selectionModes, onError, mapMode, changedtick, arguments, isBang, register )
     let l:save_view = winsaveview()
     let l:save_cursor = getpos('.')
     let l:save_clipboard = &clipboard
@@ -221,7 +223,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 	call s:Error(a:onError, 'Not applicable here')
     else
 	let l:yankMode = getregtype('"')
-	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, @", a:mapMode, a:changedtick, a:arguments, a:isBang)
+	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, @", a:mapMode, a:changedtick, a:arguments, a:isBang, a:register)
 	if ! l:isSuccess
 	    call winrestview(l:save_view)
 	    if a:onError ==# 'beep'
@@ -306,7 +308,7 @@ endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
     let l:count = v:count
-    if ! s:Transform(v:count, s:algorithm, a:selectionMode, 'beep', 'o', b:changedtick - (&l:readonly ? 1 : 0), [], 0) " Need to subtract 1 from b:changedtick because of the no-op modification check (which here is conditional on 'readonly').
+    if ! s:Transform(v:count, s:algorithm, a:selectionMode, 'beep', 'o', b:changedtick - (&l:readonly ? 1 : 0), [], 0, v:register) " Need to subtract 1 from b:changedtick because of the no-op modification check (which here is conditional on 'readonly').
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
 	endif
@@ -324,8 +326,9 @@ endfunction
 
 function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping, isRepeat )
     let l:count = v:count
+    let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
-    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
 	endif
@@ -335,6 +338,7 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     " multiple steps (visual selection, "gv" and "p" commands inside
     " s:Transform()).
     silent! call       repeat#set("\<Plug>" . a:repeatMapping . 'Line', l:count)
+    silent! call       repeat#setreg("\<Plug>" . a:repeatMapping . 'Line', l:register)
     " Also enable a repetition in visual mode through visualrepeat.vim.
     silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
     " Store the change number and algorithm so that we can detect a repeat of
@@ -345,8 +349,9 @@ endfunction
 
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let l:count = v:count
+    let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
-    if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [], 0)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+    if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
 	endif
@@ -358,6 +363,7 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     " Note: We cannot pass the count here, the <SID>Reselect "1v" would swallow
     " that. But what would a count mean in this case, anyway?
     silent! call       repeat#set("\<Plug>" . a:repeatMapping . 'Visual', -1)
+    silent! call       repeat#setreg("\<Plug>" . a:repeatMapping . 'Visual', l:register)
     " Also enable a repetition in visual mode through visualrepeat.vim.
     silent! call visualrepeat#set("\<Plug>" . a:repeatMapping . 'Visual', l:count)
     " Store the change number and algorithm so that we can detect a repeat of
@@ -366,13 +372,13 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let s:repeatTick = b:changedtick
 endfunction
 
-function! TextTransform#Arbitrary#Command( firstLine, lastLine, isBang, count, algorithm, selectionModes, ... )
+function! TextTransform#Arbitrary#Command( firstLine, lastLine, isBang, register, count, algorithm, selectionModes, ... )
     let l:selectionMode = a:selectionModes
     if a:firstLine == line("'<") && a:lastLine == line("'>")
 	let l:selectionMode = visualmode()
     endif
 
-    let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1, a:000, a:isBang)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
+    let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1, a:000, a:isBang, a:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 
     " Store the change number and algorithm so that we can detect a repeat of
     " the same substitution.
