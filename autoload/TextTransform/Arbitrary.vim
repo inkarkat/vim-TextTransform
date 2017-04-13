@@ -20,6 +20,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.25.026	14-Apr-2017	ENH: Keep the original register contents of the
+"				default register (that is used for buffer
+"				manipulation) during application of the
+"				algorithm. The user may want to access it.
 "   1.25.025	13-Apr-2017	ENH: Add g:TextTransformContext.register.
 "   1.25.024	21-Aug-2016	FIX: Do not attempt to restore empty visual
 "				mode, as this results in a beep; this can happen
@@ -223,7 +227,9 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 	call s:Error(a:onError, 'Not applicable here')
     else
 	let l:yankMode = getregtype('"')
-	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, @", a:mapMode, a:changedtick, a:arguments, a:isBang, a:register)
+	let l:text = @"
+	call setreg('"', l:save_reg, l:save_regmode)
+	let [l:isSuccess, l:transformedText] = s:ApplyAlgorithm(a:algorithm, l:text, a:mapMode, a:changedtick, a:arguments, a:isBang, a:register)
 	if ! l:isSuccess
 	    call winrestview(l:save_view)
 	    if a:onError ==# 'beep'
@@ -231,7 +237,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 		" mappings, we also want them to beep.
 		call s:Error(a:onError, '')
 	    endif
-	elseif l:transformedText ==# @"
+	elseif l:transformedText ==# l:text
 	    call winrestview(l:save_view)
 	    let l:isSuccess = 0
 	    call s:Error(a:onError, 'Nothing transformed')
