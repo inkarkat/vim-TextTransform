@@ -40,7 +40,7 @@ function! ContextEcho( text )
     echomsg printf('mapMode %s, mode %s from %s to %s', string(g:TextTransformContext.mapMode), strtrans(g:TextTransformContext.mode), string(g:TextTransformContext.startPos), string(g:TextTransformContext.endPos))
     return MarkBoundaries(a:text)
 endfunction
-function! ContextMockTransform( text )
+function! GetContext()
     if type(g:context) == type([])
 	let l:context = remove(g:context, 0)
 	let l:context.description .= ' ('.len(g:context).')'
@@ -51,6 +51,10 @@ function! ContextMockTransform( text )
 	let l:context = g:context
 	unlet g:context
     endif
+    return l:context
+endfunction
+function! ContextMockTransform( text )
+    let l:context = GetContext()
     call vimtap#Is(g:TextTransformContext.mapMode,           l:context.mapMode,           l:context.description . ' - ' . 'mapMode')
     call vimtap#Is(g:TextTransformContext.mode,              l:context.mode,              l:context.description . ' - ' . 'mode')
     call vimtap#Is(g:TextTransformContext.startPos[2],       l:context.startPos,          l:context.description . ' - ' . 'startPos')
@@ -65,5 +69,12 @@ function! ContextMockTransform( text )
 endfunction
 function! ContextArgumentsMockTransform( text )
     call vimtap#Is(g:TextTransformContext.arguments, g:context.arguments, g:context.description)
+    return MyTransform(a:text)
+endfunction
+function! RegisterCheckTransform( text )
+    let l:context = GetContext()
+    call vimtap#Is(getreg(''), l:context.regContents, l:context.description . ' - register contents')
+    call vimtap#Is(getregtype(''), l:context.regType, l:context.description . ' - register type')
+
     return MyTransform(a:text)
 endfunction
