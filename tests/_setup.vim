@@ -1,3 +1,5 @@
+call vimtest#AddDependency('vim-ingo-library')
+
 function! InsertExampleText( description, ... )
     call append(0, a:description)
     call append(1, '')
