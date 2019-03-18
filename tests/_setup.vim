@@ -1,4 +1,7 @@
 call vimtest#AddDependency('vim-ingo-library')
+if g:runVimTest =~# 'repeat\u'
+    call vimtest#AddDependency('vim-repeat')
+endif
 
 function! InsertExampleText( description, ... )
     call append(0, a:description)
