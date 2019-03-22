@@ -33,6 +33,8 @@ RELATED WORKS								     *
   The TextTransform plugin enhances unimpaired's transformation function with
   handling of text objects and a list of selection fallbacks, and allows to
   not only create mappings, but also transformation commands.
+- vim-transform (https://github.com/t9md/vim-transform) pipes the selection
+  through (multiple, configurable) external commands.
 
 ==============================================================================
 USAGE							 *TextTransform-usage*
@@ -379,7 +381,7 @@ First published version.
 Started development.
 
 ==============================================================================
-Copyright: (C) 2011-2017 Ingo Karkat
+Copyright: (C) 2011-2019 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>
