@@ -104,7 +104,8 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 					command; always 0 for mappings.
 			    "register":	Used register (as |v:register| has
 					been clobbered). Commands need to pass
-					|:command-register| to fill this.
+					|:command-register| in
+					{commandOptions} to fill this.
 			    "isAlgorithmRepeat":
 					Flag whether the same
 					|TextTransform-algorithm| is used
@@ -293,7 +294,11 @@ HISTORY						       *TextTransform-history*
   handle a count.
 - FIX: Do not attempt to restore empty visual mode, as this results in a beep;
   this can happen when no visual selection wasn't done yet.
-- ENH: Add g:TextTransformContext.register.
+- ENH: Add g:TextTransformContext.register for transformations that use a
+  (user-specified) register.
+- ENH: Keep the original register contents of the default register (that is
+  used for buffer manipulation) during application of the algorithm. The user
+  may want to access it.
   *** You need to update to ingo-library (vimscript #4433) version 1.022! ***
 
 1.24	19-Jun-2014
