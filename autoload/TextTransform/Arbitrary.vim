@@ -27,7 +27,17 @@ function! s:YankRange( begin, end, ... ) abort
 
     let [l:recordedLnums, l:startLnums, l:endLnums, l:didClobberSearchHistory] = ingo#range#lines#Get(1, line('$'), l:range, 0)
     if ! empty(l:recordedLnums)
-	execute 'keepjumps' l:startLnums[0] . 'normal! V' . l:endLnums[0] . 'Gy'
+	if a:0
+	    let l:areas = ingo#area#frompattern#Get(l:startLnums[0], l:endLnums[0], a:1, 0, 0)
+	    let l:area = get(l:areas, (a:0 >= 2 ? a:2 : 0), [])
+	    if ! empty(l:area)
+		if ingo#selection#Set(l:area[0], l:area[1], 'v')
+		    silent normal! gvy
+		endif
+	    endif
+	else
+	    execute 'keepjumps' l:startLnums[0] . 'normal! V' . l:endLnums[0] . 'Gy'
+	endif
     endif
     if l:didClobberSearchHistory
 	call histdel('search', -1)
@@ -78,7 +88,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
     let l:save_reg = getreg('"')
     let l:save_regmode = getregtype('"')
     let @" = ''
-    let l:save_visualarea = [visualmode(), getpos("'<"), getpos("'>")]
+    let l:save_visualarea = [getpos("'<"), getpos("'>"), visualmode()]
     let l:isSuccess = 0
     let l:count = (a:count ? a:count : '')
     call ingo#err#Clear()
@@ -188,12 +198,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 	endif
     endif
 
-    if visualmode() !=# l:save_visualarea[0] && ! empty(l:save_visualarea[0])
-	execute 'normal!' l:save_visualarea[0] . "\<Esc>"
-    endif
-    call ingo#compat#setpos("'<", l:save_visualarea[1])
-    call ingo#compat#setpos("'>", l:save_visualarea[2])
-
+    call call('ingo#selection#Set', l:save_visualarea)
     call setreg('"', l:save_reg, l:save_regmode)
     let &clipboard = l:save_clipboard
 

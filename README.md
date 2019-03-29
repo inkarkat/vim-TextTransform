@@ -126,12 +126,24 @@ USAGE
                             visual selection, and is easiest to commit to muscle
                             memory, so it should "do what I mean".
 
-                            The optional {selectionModes} argument is a single
-                            text object (such as "aw"), motion (e.g. "$"),
-                            Funcref (for a custom selection), /-delimited
-                            "/{pattern}/" (which selects the text region under /
-                            after the cursor that matches {pattern}), or the
-                            string "lines", which represents the default behavior.
+                            The optional {selectionModes} argument is one of:
+                            - a single text object (such as "aw")
+                            - motion (e.g. "$")
+                            - Funcref (for a custom selection)
+                            - /-delimited "/{pattern}/" (which selects the text
+                              region under / after the cursor that matches
+                              {pattern})
+                            - List of
+                              [{begin-pattern}, {end-pattern}[, {match}[, {index}]]]
+                              or
+                              [[{begin-pattern}, {offset}],
+                               [{end-pattern}, {offset}]
+                               [, {match}[, {index}]]]
+                              which select [[{index}'d occurrence of] the
+                              {match}ed text inside] / full lines around the
+                              current position
+                            - the string "lines", which represents the default
+                              behavior
                             If you pass a list of these, TextTransform tries each
                             selectionMode, one after the other, until one captures
                             non-empty text. For example, the passed list ['i"',
@@ -245,7 +257,7 @@ To uninstall, use the :RmVimball command.
 ### DEPENDENCIES
 
 - Requires Vim 7.0 or higher.
-- Requires the ingo-library.vim plugin ([vimscript #4433](http://www.vim.org/scripts/script.php?script_id=4433)), version 1.022 or
+- Requires the ingo-library.vim plugin ([vimscript #4433](http://www.vim.org/scripts/script.php?script_id=4433)), version 1.037 or
   higher.
 - repeat.vim ([vimscript #2136](http://www.vim.org/scripts/script.php?script_id=2136)) plugin (optional)
 - visualrepeat.vim ([vimscript #3848](http://www.vim.org/scripts/script.php?script_id=3848)) plugin (optional)
@@ -267,6 +279,13 @@ https://github.com/inkarkat/vim-TextTransform/issues or email (address below).
 
 HISTORY
 ------------------------------------------------------------------------------
+
+##### 1.30    RELEASEME
+- ENH: Add range selectionMode that covers full lines between two patterns
+  around the cursor, optionally with offsets, optionally just a match inside
+  that range, optionally one indexed match.
+
+__You need to update to ingo-library ([vimscript #4433](http://www.vim.org/scripts/script.php?script_id=4433)) version 1.037!__
 
 ##### 1.25    29-Mar-2019
 - Minor: Remove debugging output when a command transforms whole lines.
