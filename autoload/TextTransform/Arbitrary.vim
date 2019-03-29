@@ -3,128 +3,16 @@
 " This module is responsible for the transformation triggered by mappings.
 "
 " DEPENDENCIES:
-"   - TextTransform.vim autoload script
-"   - ingo/compat.vim autoload script
-"   - ingo/err.vim autoload script
-"   - ingo/list.vim autoload script
-"   - ingo/msg.vim autoload script
-"   - ingo/selection/frompattern.vim autoload script
+"   - ingo-library.vim plugin
 "   - repeat.vim (vimscript #2136) autoload script (optional)
 "   - visualrepeat.vim (vimscript #3848) autoload script (optional)
 "
-" Copyright: (C) 2011-2017 Ingo Karkat
+" Copyright: (C) 2011-2019 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
-"
-" REVISION	DATE		REMARKS
-"   1.25.026	14-Apr-2017	ENH: Keep the original register contents of the
-"				default register (that is used for buffer
-"				manipulation) during application of the
-"				algorithm. The user may want to access it.
-"   1.25.025	13-Apr-2017	ENH: Add g:TextTransformContext.register.
-"   1.25.024	21-Aug-2016	FIX: Do not attempt to restore empty visual
-"				mode, as this results in a beep; this can happen
-"				when no visual selection wasn't done yet.
-"   1.25.023	18-Jan-2016	Pass v:count, not v:count1 to
-"				[visual]repeat.vim; this matters when using
-"				TextTransform#Selections#SurroundedByCharsInSingleLine(),
-"				which doesn't handle a count. I noticed when
-"				repeating a substitution that has lineTypes of
-"				[quoted, lines], and it would apply to the
-"				entire line, not the quoted text the cursor was
-"				on.
-"   1.25.022	27-May-2015	Handle non-String results returned by the
-"				algorithm via TextTransform#ToText().
-"   1.24.021	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
-"				custom transformation commands).
-"   1.23.020	08-May-2014	ENH: Support selection mode "/{pattern}/", which
-"				selects the text region under / after the cursor
-"				that matches {pattern}.
-"   1.23.019	25-Mar-2014	Minor: Also handle :echoerr in the algorithm.
-"   1.21.018	20-Nov-2013	Need to use ingo#compat#setpos() to make a
-"				selection in Vim versions before 7.3.590.
-"   1.21.017	15-Oct-2013	Replace conditional with ingo#list#Make().
-"   1.20.016	25-Sep-2013	Add g:TextTransformContext.arguments.
-"   1.20.015	16-Sep-2013	Add g:TextTransformContext.isAlgorithmRepeat.
-"				Add g:TextTransformContext.isRepeat. For that,
-"				we need to provide additional <Plug>TextR...
-"				repeat mappings installed into repeat.vim. For
-"				the operator mapping, its g@ is repeated by Vim
-"				itself, but not the
-"				TextTransform#Arbitrary#Expression() triggered
-"				by the mapping, so we clear the repeatTick there
-"				to be able to distinguish.
-"   1.20.014	24-Jul-2013	Add g:TextTransformContext.mapMode.
-"   1.12.013	26-Jun-2013	Use ingo/err.vim for commands; mappings use its
-"				infrastructure, but still :echomsg the error
-"				message (or beep).
-"   1.12.012	25-Jun-2013	FIX: When the selection mode is a text object,
-"				and the text is at the end of the line, the
-"				replacement is inserted one-off to the left.
-"				Temporarily :set virtualedit=onemore to ensure
-"				that the "P" paste is done at the right position
-"				in all cases.
-"   1.11.011	17-May-2013	FIX: When the selection mode is a text object,
-"				must still establish a visual selection of the
-"				yanked text so that g:TextTransformContext
-"				contains valid data for use by a:algorithm.
-"				Use ingo-library for error messages.
-"   1.11.010	21-Mar-2013	Avoid changing the jumplist.
-"   1.10.009	18-Jan-2013	FIX: In a blockwise visual selection with $ to
-"				the end of the lines, only the square block from
-"				'< to '> is transformed. Need to yank the
-"				selection with gvy instead of defining a new
-"				selection with the marks, a mistake inherited
-"				from the original unimpaired.vim implementation.
-"				Save and restore the original visual area to
-"				avoid clobbering the '< and '> marks and gv by
-"				line- and motion mappings.
-"				Temporarily set g:TextTransformContext to the
-"				begin and end of the currently transformed area
-"				to offer an extended interface to algorithms.
-"   1.03.008	28-Aug-2012	For the custom operators, handle readonly and
-"				nomodifiable buffers by printing just the
-"				warning / error, without the multi-line function
-"				error.
-"   1.02.007	28-Jul-2012	Avoid E706: Variable type mismatch when
-"				TextTransform#Arbitrary#Expression() is used
-"				with both Funcref- and String-type algorithms.
-"   1.01.006	05-Apr-2012	Place the cursor at the beginning of the
-"				transformed text, to be consistent with built-in
-"				transformation commands like gU, and because it
-"				makes much more sense.
-"   1.00.005	05-Apr-2012	Initial release.
-"	005	14-Mar-2012	Always set repetition, not just when the
-"				transformation succeeds, so that the repetition
-"				does not unset itself when a repeat attempt
-"				fails. This trades one inconsistency for
-"				another: The initial mapping should not repeat
-"				when the transformation fails. We could achieve
-"				that for the line and visual mappings, although
-"				clumsily. (We need to pass a:isRepeat to the
-"				functions here; either we set up a duplicate set
-"				of Repeat <Plug>-mappings, or we try to detect
-"				the repetition at the beginning of the
-"				<Plug>-mapping (in s:Before(), comparing
-"				b:changedtick with g:repeat_tick, which caused
-"				funny errors when I tried it), and then pass
-"				this information to the later call via a
-"				script-local variable.) This cannot be achieved
-"				for the operator-pending mapping, because Vim
-"				will always repeat the g@ command; there's no
-"				way to undo that. Therefore, rather be
-"				internally consistent and avoid the large
-"				complexity of a partial solution (which other
-"				repeat.vim plugins also do not attempt.)
-"	004	06-Dec-2011	Retire visualrepeat#set_also(); use
-"				visualrepeat#set() everywhere.
-"	003	13-Jun-2011	FIX: Directly ring the bell to avoid problems
-"				when running under :silent!.
-"	002	05-Apr-2011	Implement TextTransform#Arbitrary#Command().
-"	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 let s:save_cpo = &cpo
 set cpo&vim
 

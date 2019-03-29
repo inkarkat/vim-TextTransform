@@ -3,54 +3,14 @@
 " This module is responsible for the transformation triggered by commands.
 "
 " DEPENDENCIES:
-"   - TextTransform.vim autoload script
-"   - ingo/lines.vim autoload script (for TextTransform#Lines#TransformWholeText())
-"   - ingo/range.vim autoload script
+"   - ingo-library.vim plugin
 "
-" Copyright: (C) 2011-2017 Ingo Karkat
+" Copyright: (C) 2011-2019 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
-"
-" REVISION	DATE		REMARKS
-"   1.25.015	13-Apr-2017	ENH: Add g:TextTransformContext.register.
-"   1.25.014	27-May-2015	Handle non-String results returned by the
-"				algorithm via TextTransform#ToText().
-"				When transforming individual lines and we get
-"				multiple lines as the algorithm's result,
-"				setline() cannot be used; instead, use
-"				ingo#lines#Replace().
-"				When transforming individual or whole lines and
-"				we get multiple / additional lines as the
-"				algorithm's result, these need to be accounted
-"				for, for cursor positioning and reporting.
-"   1.25.013	03-Feb-2015	FIX: Correctly handle command range of :. when
-"				on a closed fold. Need to use
-"				ingo#range#NetStart().
-"   1.25.012	23-Sep-2014	Minor: Remove debugging output when a command
-"				transforms whole lines.
-"   1.24.011	13-Jun-2014	ENH: Add g:TextTransformContext.isBang (for
-"				custom transformation commands).
-"   1.23.010	19-May-2014	Refactoring: Use ingo#lines#Replace().
-"   1.23.009	25-Mar-2014	Minor: Also handle :echoerr in the algorithm.
-"   1.20.008	25-Sep-2013	Add g:TextTransformContext.arguments.
-"   1.20.007	16-Sep-2013	Add g:TextTransform.isAlgorithmRepeat and
-"				g:TextTransform.isRepeat.
-"   1.20.006	24-Jul-2013	Add g:TextTransformContext.mapMode.
-"   1.11.005	17-May-2013	Use ingo-library for error messages.
-"   1.11.004	04-Apr-2013	Move ingolines#PutWrapper() into ingo-library.
-"   1.10.003	18-Jan-2013	Temporarily set g:TextTransformContext to the
-"				begin and end of the currently transformed lines
-"				to offer the same extended interface for
-"				algorithms that TextTransform/Arbitrary.vim
-"				had automatically with the '<, '> marks and
-"				visualmode().
-"   1.03.002	02-Sep-2012	Avoid clobbering the expression register (for
-"				commands that use options.isProcessEntireText).
-"   1.00.001	05-Apr-2012	Initial release.
-"	001	05-Apr-2011	file creation from autoload/TextTransform.vim.
 let s:save_cpo = &cpo
 set cpo&vim
 

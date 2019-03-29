@@ -1,112 +1,14 @@
 " TextTransform.vim: Create text transformation mappings and commands.
 "
 " DEPENDENCIES:
-"   - TextTransform#Arbitrary.vim autoload script
-"   - TextTransform#Lines.vim autoload script
-"   - ingo/err.vim autoload script
-"   - ingo/escape/command.vim autoload script
+"   - ingo-library.vim plugin
 "
-" Copyright: (C) 2011-2017 Ingo Karkat
+" Copyright: (C) 2011-2019 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
-"
-" REVISION	DATE		REMARKS
-"   1.25.020	13-Apr-2017	Handle register: Pass on in <SID>Reselect.
-"   1.25.019	27-May-2015	Add TextTransform#ToText() to handle non-String
-"				results returned by the algorithm. Floats need
-"				to be explicitly converted; Lists should be
-"				flattened, too, to yield correct results for the
-"				modification check with the original text. Dicts
-"				and Funcrefs should not be returned and cause an
-"				exception.
-"   1.25.018	21-Mar-2015	FIX: Redefinition of l:SelectionModes inside
-"				loop (since 1.12) may cause "E705: Variable name
-"				conflicts with existing function" (in Vim
-"				7.2.000). Move the variable definition out of
-"				the loop.
-"   1.25.017	02-Mar-2015	The selectionModes argument may (in /{pattern}/
-"				form) contain special characters (e.g. "|" in
-"				/foo\|bar/) that need escaping in order to
-"				survive. Use ingo#escape#command#mapescape().
-"   1.24.016	13-Jun-2014	ENH: Allow optional [!] for made commands, and
-"				suppress the "Nothing transformed" error in that
-"				case. This can help when using the resulting
-"				command as an optional step, as prefixing with
-"				:silent! can be difficult to combine with
-"				ranges, and would suppress _all_ transformation
-"				errors.
-"   1.20.015	25-Sep-2013	Allow to pass command arguments, which are then
-"				accessible to the algorithm through
-"				g:TextTransformContext.arguments.
-"   1.20.014	16-Sep-2013	Provide separate <Plug>TextR... repeat mappings
-"				to be able to distinguish between a mapping and
-"				its repeat via repeat.vim.
-"   1.12.013	26-Jun-2013	Also perform the no-op check for the generated
-"				commands. This avoids the attempted processing
-"				and gives a better error message than the
-"				current "E21: Cannot make changes, 'modifiable'
-"				is off: 10,10delete _"
-"				Abort commands in case of error.
-"   1.12.012	14-Jun-2013	Minor: Make substitute() robust against
-"				'ignorecase'.
-"   1.04.011	28-Dec-2012	Minor: Correct lnum for no-modifiable buffer
-"				check.
-"   1.00.010	05-Apr-2012	Initial release.
-"	010	19-Oct-2011	BUG: Variable rename from LineTypes to
-"				l:selectionModes broke Funcref arguments; my
-"				test suite would have caught this, if only I had
-"				run it :-)
-"	009	11-Apr-2011	Implement customization of mappings (by having
-"				mappings to the <Plug>-mappings) and no custom
-"				mappings (by passing an empty a:key), just the
-"				<Plug>-mappings.
-"	008	10-Apr-2011	Define commands with bang; otherwise,
-"				buffer-local commands defined by ftplugins will
-"				cause errors when the filetype changes (to one
-"				that defines the same commands).
-"	007	05-Apr-2011	Add TextTransform#MakeSelectionCommand() command
-"				variant that uses s:Transform() and allows to
-"				operate on text objects, motions, visual
-"				selection, ...
-"				Replace "unimpaired" prefix with "TextT" to
-"				remove the last remnant of the original
-"				unimpaired.vim script and make this fully
-"				independent.
-"	006	05-Apr-2011	Limit the amount of script that gets sourced
-"				when commands / mappings are defined during Vim
-"				startup:
-"				Extract actual transformations on lines to
-"				TextTransform#Lines.vim.
-"			    	Extract actual transformations in mappings to
-"			    	TextTransform#Arbitrary.vim.
-"	005	29-Mar-2011	Rename TextTransform#MapTransform() to
-"				TextTransform#MakeMappings().
-"				Implement 'isProcessEntireText' option.
-"				Factor out s:TransformCommand() function and
-"				make it delegate to the passed
-"				a:ProcessFunction, which is either
-"				s:TransformLinewise() or s:TransformWholeText().
-"	004	28-Mar-2011	ENH: Allow use of Funcref for a:algorithm in
-"				order to support script-local transformation
-"				functions.
-"	003	25-Mar-2011	ENH: Use s:TransformExpression() instead of
-"				s:TransformSetup() to enable passing <count>
-"				before the operator-pending mapping.
-"				Tighten pattern to detect visualmode() arguments
-"				in s:Transform().
-"				Implement TextTransform#MakeCommand() for
-"				linewise application of the algorithm.
-"				ENH: Catch and report errors in algorithm.
-"				ENH: Do not make the buffer modified if no
-"				transformation is done.
-"	002	16-Mar-2011	Fix off-by-one errors with some modes and
-"				'selection' settings.
-"				FIX: Parsing for l:doubledKey now also accepts
-"				key modifiers like "<S-...>".
-"	001	07-Mar-2011	file creation from plugin/unimpaired.vim
 
 function! s:Before()
     let s:isModified = &l:modified
