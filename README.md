@@ -268,7 +268,7 @@ https://github.com/inkarkat/vim-TextTransform/issues or email (address below).
 HISTORY
 ------------------------------------------------------------------------------
 
-##### 1.25    RELEASEME
+##### 1.25    29-Mar-2019
 - Minor: Remove debugging output when a command transforms whole lines.
 - FIX: Correctly handle command range of :. when on a closed fold. Need to use
   ingo#range#NetStart().

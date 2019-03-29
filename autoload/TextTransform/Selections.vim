@@ -2,19 +2,10 @@
 "
 " DEPENDENCIES:
 "
-" Copyright: (C) 2011-2015 Ingo Karkat
+" Copyright: (C) 2011-2019 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
-"
-" REVISION	DATE		REMARKS
-"   1.25.004	26-Mar-2015	Don't apply
-"				TextTransform#Selections#SurroundedByCharsInSingleLine()
-"				when [count] is given; skip to the next
-"				selectionMode then.
-"   1.25.003	14-Mar-2015	Add TextTransform#Selections#EntireBuffer().
-"   1.22.002	06-Mar-2014	Add to TextTransform plugin.
-"	001	08-Mar-2011	file creation
 
 function! TextTransform#Selections#SurroundedByCharsInSingleLine( chars )
     if v:count
