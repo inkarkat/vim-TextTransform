@@ -135,12 +135,19 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 			visual selection, and is easiest to commit to muscle
 			memory, so it should "do what I mean".
 						*TextTransform-selectionModes*
-			The optional {selectionModes} argument is a single
-			text object (such as "aw"), motion (e.g. "$"),
-			|Funcref| (for a custom selection), /-delimited
-			"/{pattern}/" (which selects the text region under /
-			after the cursor that matches {pattern}), or the
-			string "lines", which represents the default behavior.
+			The optional {selectionModes} argument is one of:
+			- a single text object (such as "aw")
+			- motion (e.g. "$")
+			- |Funcref| (for a custom selection)
+			- /-delimited "/{pattern}/" (which selects the text
+			  region under / after the cursor that matches
+			  {pattern})
+			- List of [{begin-pattern}, {end-pattern}] or
+			  [[{begin-pattern}, {offset}], [{end-pattern},
+			  {offset}]], which select full lines around the
+			  current position
+			- the string "lines", which represents the default
+			  behavior
 			If you pass a list of these, TextTransform tries each
 			selectionMode, one after the other, until one captures
 			non-empty text. For example, the passed list ['i"',
@@ -276,6 +283,8 @@ https://github.com/inkarkat/vim-TextTransform/issues or email (address below).
 
 ==============================================================================
 HISTORY						       *TextTransform-history*
+
+1.30	RELEASEME
 
 1.25	29-Mar-2019
 - Minor: Remove debugging output when a command transforms whole lines.

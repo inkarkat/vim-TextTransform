@@ -16,6 +16,24 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+function! s:RenderSearchAddress( searchOp, pattern, ... ) abort
+    return a:searchOp . escape(a:pattern, a:searchOp) . a:searchOp . (a:0 ? a:1 : '')
+endfunction
+function! s:YankRange( begin, end, ... ) abort
+    let l:range = printf('+1%s,-1%s',
+    \   call('s:RenderSearchAddress', ['?'] + ingo#list#Make(a:begin)),
+    \   call('s:RenderSearchAddress', ['/'] + ingo#list#Make(a:end))
+    \)
+
+    let [l:recordedLnums, l:startLnums, l:endLnums, l:didClobberSearchHistory] = ingo#range#lines#Get(1, line('$'), l:range, 0)
+    if ! empty(l:recordedLnums)
+	execute 'keepjumps' l:startLnums[0] . 'normal! V' . l:endLnums[0] . 'Gy'
+    endif
+    if l:didClobberSearchHistory
+	call histdel('search', -1)
+    endif
+endfunction
+
 let s:repeatTick = -1
 let s:previousTransform = {'changedtick': -1, 'algorithm': ''}
 function! s:Error( onError, errorText )
@@ -72,6 +90,8 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 "****D echomsg '****' string(getpos("'<")) string(getpos("'>"))
 		silent! normal! gvy
 	    endif
+	elseif type(l:SelectionMode) == type([])
+	    call call('s:YankRange', l:SelectionMode)
 	elseif l:SelectionMode ==# 'lines'
 	    silent! execute 'normal! 0v' . l:count . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
 	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
