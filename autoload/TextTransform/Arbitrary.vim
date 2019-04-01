@@ -36,7 +36,7 @@ function! s:YankRange( begin, end, ... ) abort
 		endif
 	    endif
 	else
-	    execute 'keepjumps' l:startLnums[0] . 'normal! V' . l:endLnums[0] . 'Gy'
+	    execute 'silent keepjumps' l:startLnums[0] . 'normal! V' . l:endLnums[0] . 'Gy'
 	endif
     endif
     if l:didClobberSearchHistory
