@@ -108,7 +108,7 @@ endfunction
 
 
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
-    execute printf('command -bar -bang -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <bang>0, <q-register>, <count>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
+    execute printf('command -bar -bang -range=-1 -nargs=* %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <bang>0, <q-register>, (<count> == -1 ? <q-args> : <count>), %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
     \	a:commandOptions,
     \	a:commandName,
     \	string(a:algorithm),
