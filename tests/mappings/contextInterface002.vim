@@ -1,4 +1,4 @@
-" Test the TextTransformContext interface.
+" Test the TextTransformContext interface with different trigger positions.
 
 call TextTransform#MakeMappings('', '<Leader>sU', 'ContextEcho')
 
@@ -8,28 +8,28 @@ function! InsertExampleMultilineTextAndEcho( description )
 endfunction
 
 call InsertExampleMultilineTextAndEcho('single line')
-normal \sUU
+normal $\sUU
 
 call InsertExampleMultilineTextAndEcho('character motion')
-normal \sU3e
+normal 3el\sU3b
 
 call InsertExampleMultilineTextAndEcho('character textobject')
-normal \sU3iw
+normal 2l\sU3iw
 
 call InsertExampleMultilineTextAndEcho('line motion')
-normal \sU+
+normal 0\sU+
 
 call InsertExampleMultilineTextAndEcho('visual characterwise selection')
-normal v3e\sU
+normal v3eo\sU
 
 call InsertExampleMultilineTextAndEcho('visual linewise selection')
-normal Vj\sU
+normal Vjo\sU
 
 call InsertExampleMultilineTextAndEcho('visual blockwise selection')
-execute "normal \<C-V>ej\\sU"
+execute "normal \<C-V>ejo\\sU"
 
 call InsertExampleMultilineTextAndEcho('visual blockwise selection to end')
-execute "normal \<C-V>$j\\sU"
+execute "normal \<C-V>$jo\\sU"
 
 
 call vimtest#Quit()

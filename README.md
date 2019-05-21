@@ -89,6 +89,9 @@ USAGE
                                         "V", or "^V" (like visualmode())
                                 "startPos": the start position of the text
                                 "endPos"  : the end position of the text
+                                "triggerPos":
+                                            the cursor position where the
+                                            transformation has been triggered
                                 "arguments":List of optional passed command
                                             arguments (when arguments have been
                                             configured for a command; always empty
@@ -284,6 +287,7 @@ HISTORY
 - ENH: Add range selectionMode that covers full lines between two patterns
   around the cursor, optionally with offsets, optionally just a match inside
   that range, optionally one indexed match.
+- ENH: Add g:TextTransformContext.triggerPos.
 
 __You need to update to ingo-library ([vimscript #4433](http://www.vim.org/scripts/script.php?script_id=4433)) version 1.037!__
 

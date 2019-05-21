@@ -1,27 +1,31 @@
 single line
 
-mapMode 'n', mode v from [0, 2, 1, 0] to [0, 2, 35, 0]
+mapMode 'n', mode v from [0, 2, 1, 0] to [0, 2, 35, 0], triggered at [2, 15]
 
 character motion
 
-mapMode 'o', mode v from [0, 2, 15, 0] to [0, 2, 29, 0]
+mapMode 'o', mode v from [0, 2, 15, 0] to [0, 2, 29, 0], triggered at [2, 15]
+
+character textobject
+
+mapMode 'o', mode v from [0, 2, 15, 0] to [0, 2, 25, 0], triggered at [2, 15]
 
 line motion
 
-mapMode 'o', mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0]
+mapMode 'o', mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0], triggered at [2, 15]
 
 visual characterwise selection
 
-mapMode 'v', mode v from [0, 2, 15, 0] to [0, 2, 29, 0]
+mapMode 'v', mode v from [0, 2, 15, 0] to [0, 2, 29, 0], triggered at [2, 29]
 
 visual linewise selection
 
-mapMode 'v', mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0]
+mapMode 'v', mode V from [0, 2, 1, 0] to [0, 3, 2147483647, 0], triggered at [3, 15]
 
 visual blockwise selection
 
-mapMode 'v', mode ^V from [0, 2, 15, 0] to [0, 3, 19, 0]
+mapMode 'v', mode ^V from [0, 2, 15, 0] to [0, 3, 19, 0], triggered at [3, 19]
 
 visual blockwise selection to end
 
-mapMode 'v', mode ^V from [0, 2, 15, 0] to [0, 3, 26, 0]
+mapMode 'v', mode ^V from [0, 2, 15, 0] to [0, 3, 26, 0], triggered at [3, 25]

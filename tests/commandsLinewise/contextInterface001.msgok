@@ -1,9 +1,9 @@
 single line
 
-mapMode 'c', mode V from [0, 2, 1, 0] to [0, 2, 2147483647, 0]
+mapMode 'c', mode V from [0, 2, 1, 0] to [0, 2, 2147483647, 0], triggered at [1, 11]
 
 many lines
 
-mapMode 'c', mode V from [0, 2, 1, 0] to [0, 2, 2147483647, 0]
-mapMode 'c', mode V from [0, 3, 1, 0] to [0, 3, 2147483647, 0]
-mapMode 'c', mode V from [0, 4, 1, 0] to [0, 4, 2147483647, 0]
+mapMode 'c', mode V from [0, 2, 1, 0] to [0, 2, 2147483647, 0], triggered at [1, 10]
+mapMode 'c', mode V from [0, 3, 1, 0] to [0, 3, 2147483647, 0], triggered at [1, 10]
+mapMode 'c', mode V from [0, 4, 1, 0] to [0, 4, 2147483647, 0], triggered at [1, 10]

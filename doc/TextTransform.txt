@@ -98,6 +98,9 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 				    "V", or "^V" (like |visualmode()|)
 			    "startPos": the start position of the text
 			    "endPos"  : the end position of the text
+			    "triggerPos":
+					the cursor position where the
+					transformation has been triggered
 			    "arguments":List of optional passed command
 					arguments (when arguments have been
 					configured for a command; always empty
@@ -293,6 +296,7 @@ HISTORY						       *TextTransform-history*
 - ENH: Add range selectionMode that covers full lines between two patterns
   around the cursor, optionally with offsets, optionally just a match inside
   that range, optionally one indexed match.
+- ENH: Add g:TextTransformContext.triggerPos.
   *** You need to update to ingo-library (vimscript #4433) version 1.037! ***
 
 1.25	29-Mar-2019

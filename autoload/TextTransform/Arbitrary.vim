@@ -44,6 +44,9 @@ function! s:YankRange( begin, end, ... ) abort
     endif
 endfunction
 
+function! s:SetTriggerPos() abort
+    let s:triggerPos = getpos('.')[1:2]
+endfunction
 let s:repeatTick = -1
 let s:previousTransform = {'changedtick': -1, 'algorithm': ''}
 function! s:Error( onError, errorText )
@@ -62,6 +65,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, is
     \   'mode': visualmode(),
     \   'startPos': getpos("'<"),
     \   'endPos': getpos("'>"),
+    \   'triggerPos': s:triggerPos,
     \   'arguments': a:arguments,
     \   'isBang': a:isBang,
     \   'register': a:register,
@@ -210,6 +214,7 @@ function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
     let s:repeatTick = -1
+    call s:SetTriggerPos()
     set opfunc=TextTransform#Arbitrary#Opfunc
 
     let l:keys = 'g@'
@@ -247,6 +252,7 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     let l:count = v:count
     let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
+    call s:SetTriggerPos()
     if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
@@ -270,6 +276,7 @@ function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let l:count = v:count
     let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
+    call s:SetTriggerPos()
     if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
@@ -296,6 +303,7 @@ function! TextTransform#Arbitrary#Command( firstLine, lastLine, isBang, register
     if a:firstLine == line("'<") && a:lastLine == line("'>")
 	let l:selectionMode = visualmode()
     endif
+    call s:SetTriggerPos()
 
     let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1, a:000, a:isBang, a:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 
