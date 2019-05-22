@@ -42,9 +42,10 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 
 
     " Repeat not defined in visual mode.
+    vnoremap <expr> <SID>TextTRecordPos TextTransform#Arbitrary#SetTriggerPos()
     let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(".", getline("."))<Bar>call <SID>After()<Bar>'
     for [l:mappingName, l:isRepeat] in [[l:mappingName, 0], [l:repeatMappingName, 1]]
-	execute printf('vnoremap <silent> %s <SID>%sVisual <C-\><C-n>:<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s, %d)<CR>',
+	execute printf('vnoremap <silent> <script> %s <SID>%sVisual <SID>TextTRecordPos:<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s, %d)<CR>',
 	\   a:mapArgs,
 	\   l:mappingName,
 	\   l:noopModificationCheck,
@@ -93,6 +94,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 	execute 'nmap' a:mapArgs a:key . l:doubledKey l:linePlugMappingName
     endif
 endfunction
+
 
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
