@@ -288,6 +288,8 @@ HISTORY
   around the cursor, optionally with offsets, optionally just a match inside
   that range, optionally one indexed match.
 - ENH: Add g:TextTransformContext.triggerPos.
+- Mappings created through TextTransform#MakeMappings() now also abort on
+  error.
 
 __You need to update to ingo-library ([vimscript #4433](http://www.vim.org/scripts/script.php?script_id=4433)) version 1.037!__
 

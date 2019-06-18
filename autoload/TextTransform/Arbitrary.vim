@@ -254,11 +254,7 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
     call TextTransform#Arbitrary#SetTriggerPos()
-    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
-	if ingo#err#IsSet()
-	    call ingo#msg#ErrorMsg(ingo#err#Get())
-	endif
-    endif
+    let l:success = s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 
     " This mapping needs repeat.vim to be repeatable, because it contains of
     " multiple steps (visual selection, "gv" and "p" commands inside
@@ -271,6 +267,8 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     " the same substitution.
     let s:previousTransform = {'changedtick': b:changedtick, 'algorithm': a:algorithm}
     let s:repeatTick = b:changedtick
+
+    return l:success
 endfunction
 
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )

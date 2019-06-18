@@ -62,7 +62,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 	\   l:mappingName
 	\)
 
-	execute printf('nnoremap <silent> %s <Plug>%sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s, %d)<CR>',
+	execute printf('nnoremap <silent> %s <Plug>%sLine :<C-u>%sif ! TextTransform#Arbitrary#Line(%s, %s, %s, %d)<Bar>echoerr ingo#err#Get()<Bar>endif<CR>',
 	\   a:mapArgs,
 	\   l:mappingName,
 	\   l:noopModificationCheck,
