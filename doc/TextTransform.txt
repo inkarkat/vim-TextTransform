@@ -263,7 +263,7 @@ To uninstall, use the |:RmVimball| command.
 DEPENDENCIES					  *TextTransform-dependencies*
 
 - Requires Vim 7.0 or higher.
-- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.037 or
+- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.042 or
   higher.
 - repeat.vim (vimscript #2136) plugin (optional)
 - visualrepeat.vim (vimscript #3848) plugin (optional)
@@ -299,7 +299,7 @@ HISTORY						       *TextTransform-history*
 - ENH: Add g:TextTransformContext.triggerPos.
 - Mappings created through TextTransform#MakeMappings() now also abort on
   error.
-  *** You need to update to ingo-library (vimscript #4433) version 1.037! ***
+  *** You need to update to ingo-library (vimscript #4433) version 1.042! ***
 
 1.25	29-Mar-2019
 - Minor: Remove debugging output when a command transforms whole lines.
@@ -416,7 +416,7 @@ First published version.
 Started development.
 
 ==============================================================================
-Copyright: (C) 2011-2019 Ingo Karkat
+Copyright: (C) 2011-2020 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>

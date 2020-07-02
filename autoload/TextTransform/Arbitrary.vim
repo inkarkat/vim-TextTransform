@@ -4,10 +4,10 @@
 "
 " DEPENDENCIES:
 "   - ingo-library.vim plugin
-"   - repeat.vim (vimscript #2136) autoload script (optional)
-"   - visualrepeat.vim (vimscript #3848) autoload script (optional)
+"   - repeat.vim (vimscript #2136) plugin (optional)
+"   - visualrepeat.vim (vimscript #3848) plugin (optional)
 "
-" Copyright: (C) 2011-2019 Ingo Karkat
+" Copyright: (C) 2011-2020 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -216,19 +216,8 @@ function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
     let s:repeatMapping = a:repeatMapping
     let s:repeatTick = -1
     call TextTransform#Arbitrary#SetTriggerPos()
-    set opfunc=TextTransform#Arbitrary#Opfunc
 
-    let l:keys = 'g@'
-
-    if ! &l:modifiable || &l:readonly
-	" Probe for "Cannot make changes" error and readonly warning via a no-op
-	" dummy modification.
-	" In the case of a nomodifiable buffer, Vim will abort the normal mode
-	" command chain, discard the g@, and thus not invoke the operatorfunc.
-	let l:keys = ":call setline('.', getline('.'))\<CR>" . l:keys
-    endif
-
-    return l:keys
+    return ingo#mapmaker#OpfuncExpression('TextTransform#Arbitrary#Opfunc')
 endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
