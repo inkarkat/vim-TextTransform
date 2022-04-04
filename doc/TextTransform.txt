@@ -299,6 +299,7 @@ HISTORY						       *TextTransform-history*
 - ENH: Add g:TextTransformContext.triggerPos.
 - Mappings created through TextTransform#MakeMappings() now also abort on
   error.
+- BUG: Correctly double special keys with non-alpha characters (like <C-]>).
   *** You need to update to ingo-library (vimscript #4433) version 1.042! ***
 
 1.25	29-Mar-2019
@@ -416,7 +417,7 @@ First published version.
 Started development.
 
 ==============================================================================
-Copyright: (C) 2011-2020 Ingo Karkat
+Copyright: (C) 2011-2022 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>

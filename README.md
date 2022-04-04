@@ -290,6 +290,7 @@ HISTORY
 - ENH: Add g:TextTransformContext.triggerPos.
 - Mappings created through TextTransform#MakeMappings() now also abort on
   error.
+- BUG: Correctly double special keys with non-alpha characters (like &lt;C-]&gt;).
 
 __You need to update to ingo-library ([vimscript #4433](http://www.vim.org/scripts/script.php?script_id=4433)) version 1.042!__
 
@@ -410,7 +411,7 @@ gU, and because it makes much more sense.
 - Started development.
 
 ------------------------------------------------------------------------------
-Copyright: (C) 2011-2020 Ingo Karkat -
+Copyright: (C) 2011-2022 Ingo Karkat -
 The [VIM LICENSE](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license) applies to this plugin.
 
 Maintainer:     Ingo Karkat &lt;ingo@karkat.de&gt;

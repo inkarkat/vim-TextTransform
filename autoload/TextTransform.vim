@@ -3,7 +3,7 @@
 " DEPENDENCIES:
 "   - ingo-library.vim plugin
 "
-" Copyright: (C) 2011-2019 Ingo Karkat
+" Copyright: (C) 2011-2022 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -90,7 +90,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 
     let l:linePlugMappingName = l:plugMappingName . 'Line'
     if ! hasmapto(l:linePlugMappingName, 'n')
-	let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
+	let l:doubledKey = matchstr(a:key, '\(<[^[[:space:]>]\+>\|.\)$')
 	execute 'nmap' a:mapArgs a:key . l:doubledKey l:linePlugMappingName
     endif
 endfunction
