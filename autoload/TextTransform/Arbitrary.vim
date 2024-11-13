@@ -4,10 +4,10 @@
 "
 " DEPENDENCIES:
 "   - ingo-library.vim plugin
-"   - repeat.vim (vimscript #2136) autoload script (optional)
-"   - visualrepeat.vim (vimscript #3848) autoload script (optional)
+"   - repeat.vim (vimscript #2136) plugin (optional)
+"   - visualrepeat.vim (vimscript #3848) plugin (optional)
 "
-" Copyright: (C) 2011-2019 Ingo Karkat
+" Copyright: (C) 2011-2020 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -16,6 +16,38 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+function! s:RenderSearchAddress( searchOp, pattern, ... ) abort
+    return a:searchOp . escape(a:pattern, a:searchOp) . a:searchOp . (a:0 ? a:1 : '')
+endfunction
+function! s:YankRange( begin, end, ... ) abort
+    let l:range = printf('+1%s,-1%s',
+    \   call('s:RenderSearchAddress', ['?'] + ingo#list#Make(a:begin)),
+    \   call('s:RenderSearchAddress', ['/'] + ingo#list#Make(a:end))
+    \)
+
+    let [l:recordedLnums, l:startLnums, l:endLnums, l:didClobberSearchHistory] = ingo#range#lines#Get(1, line('$'), l:range, 0)
+    if ! empty(l:recordedLnums)
+	if a:0
+	    let l:areas = ingo#area#frompattern#Get(l:startLnums[0], l:endLnums[0], a:1, 0, 0)
+	    let l:area = get(l:areas, (a:0 >= 2 ? a:2 : 0), [])
+	    if ! empty(l:area)
+		if ingo#selection#Set(l:area[0], l:area[1], 'v')
+		    silent normal! gvy
+		endif
+	    endif
+	else
+	    execute 'silent keepjumps' l:startLnums[0] . 'normal! V' . l:endLnums[0] . 'Gy'
+	endif
+    endif
+    if l:didClobberSearchHistory
+	call histdel('search', -1)
+    endif
+endfunction
+
+function! TextTransform#Arbitrary#SetTriggerPos() abort
+    let s:triggerPos = getpos('.')[1:2]
+    return ''
+endfunction
 let s:repeatTick = -1
 let s:previousTransform = {'changedtick': -1, 'algorithm': ''}
 function! s:Error( onError, errorText )
@@ -34,6 +66,7 @@ function! s:ApplyAlgorithm( algorithm, text, mapMode, changedtick, arguments, is
     \   'mode': visualmode(),
     \   'startPos': getpos("'<"),
     \   'endPos': getpos("'>"),
+    \   'triggerPos': s:triggerPos,
     \   'arguments': a:arguments,
     \   'isBang': a:isBang,
     \   'register': a:register,
@@ -60,7 +93,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
     let l:save_reg = getreg('"')
     let l:save_regmode = getregtype('"')
     let @" = ''
-    let l:save_visualarea = [visualmode(), getpos("'<"), getpos("'>")]
+    let l:save_visualarea = [getpos("'<"), getpos("'>"), visualmode()]
     let l:isSuccess = 0
     let l:count = (a:count ? a:count : '')
     call ingo#err#Clear()
@@ -72,6 +105,8 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 "****D echomsg '****' string(getpos("'<")) string(getpos("'>"))
 		silent! normal! gvy
 	    endif
+	elseif type(l:SelectionMode) == type([])
+	    call call('s:YankRange', l:SelectionMode)
 	elseif l:SelectionMode ==# 'lines'
 	    silent! execute 'normal! 0v' . l:count . '$' . (&selection ==# 'exclusive' ? '' : 'h') . 'y'
 	elseif l:SelectionMode =~# "^[vV\<C-v>]$"
@@ -168,12 +203,7 @@ function! s:Transform( count, algorithm, selectionModes, onError, mapMode, chang
 	endif
     endif
 
-    if visualmode() !=# l:save_visualarea[0] && ! empty(l:save_visualarea[0])
-	execute 'normal!' l:save_visualarea[0] . "\<Esc>"
-    endif
-    call ingo#compat#setpos("'<", l:save_visualarea[1])
-    call ingo#compat#setpos("'>", l:save_visualarea[2])
-
+    call call('ingo#selection#Set', l:save_visualarea)
     call setreg('"', l:save_reg, l:save_regmode)
     let &clipboard = l:save_clipboard
 
@@ -185,19 +215,9 @@ function! TextTransform#Arbitrary#Expression( algorithm, repeatMapping )
     let s:algorithm = a:algorithm
     let s:repeatMapping = a:repeatMapping
     let s:repeatTick = -1
-    set opfunc=TextTransform#Arbitrary#Opfunc
+    call TextTransform#Arbitrary#SetTriggerPos()
 
-    let l:keys = 'g@'
-
-    if ! &l:modifiable || &l:readonly
-	" Probe for "Cannot make changes" error and readonly warning via a no-op
-	" dummy modification.
-	" In the case of a nomodifiable buffer, Vim will abort the normal mode
-	" command chain, discard the g@, and thus not invoke the operatorfunc.
-	let l:keys = ":call setline('.', getline('.'))\<CR>" . l:keys
-    endif
-
-    return l:keys
+    return ingo#mapmaker#OpfuncExpression('TextTransform#Arbitrary#Opfunc')
 endfunction
 
 function! TextTransform#Arbitrary#Opfunc( selectionMode )
@@ -222,11 +242,8 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     let l:count = v:count
     let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
-    if ! s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
-	if ingo#err#IsSet()
-	    call ingo#msg#ErrorMsg(ingo#err#Get())
-	endif
-    endif
+    call TextTransform#Arbitrary#SetTriggerPos()
+    let l:success = s:Transform(v:count, a:algorithm, a:selectionModes, 'beep', 'n', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 
     " This mapping needs repeat.vim to be repeatable, because it contains of
     " multiple steps (visual selection, "gv" and "p" commands inside
@@ -239,12 +256,18 @@ function! TextTransform#Arbitrary#Line( algorithm, selectionModes, repeatMapping
     " the same substitution.
     let s:previousTransform = {'changedtick': b:changedtick, 'algorithm': a:algorithm}
     let s:repeatTick = b:changedtick
+
+    return l:success
 endfunction
 
 function! TextTransform#Arbitrary#Visual( algorithm, repeatMapping, isRepeat )
     let l:count = v:count
     let l:register = v:register
     if ! a:isRepeat | let s:repeatTick = -1 | endif
+    " Don't call TextTransform#Arbitrary#SetTriggerPos() here; it's already been
+    " invoked by the mapping (via <SID>TextTRecordPos) to capture the original
+    " cursor position without clobbering the selection or any passed count,
+    " register, etc.
     if ! s:Transform(v:count, a:algorithm, visualmode(), 'beep', 'v', b:changedtick - 1, [], 0, l:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 	if ingo#err#IsSet()
 	    call ingo#msg#ErrorMsg(ingo#err#Get())
@@ -271,6 +294,7 @@ function! TextTransform#Arbitrary#Command( firstLine, lastLine, isBang, register
     if a:firstLine == line("'<") && a:lastLine == line("'>")
 	let l:selectionMode = visualmode()
     endif
+    call TextTransform#Arbitrary#SetTriggerPos()
 
     let l:status = s:Transform(a:count, a:algorithm, l:selectionMode, 'errmsg', 'c', b:changedtick - 1, a:000, a:isBang, a:register)    " Need to subtract 1 from b:changedtick because of the no-op modification check.
 

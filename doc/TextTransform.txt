@@ -98,6 +98,9 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 				    "V", or "^V" (like |visualmode()|)
 			    "startPos": the start position of the text
 			    "endPos"  : the end position of the text
+			    "triggerPos":
+					the cursor position where the
+					transformation has been triggered
 			    "arguments":List of optional passed command
 					arguments (when arguments have been
 					configured for a command; always empty
@@ -135,12 +138,24 @@ TextTransform#MakeMappings( {mapArgs}, {key}, {algorithm} [, {selectionModes}] )
 			visual selection, and is easiest to commit to muscle
 			memory, so it should "do what I mean".
 						*TextTransform-selectionModes*
-			The optional {selectionModes} argument is a single
-			text object (such as "aw"), motion (e.g. "$"),
-			|Funcref| (for a custom selection), /-delimited
-			"/{pattern}/" (which selects the text region under /
-			after the cursor that matches {pattern}), or the
-			string "lines", which represents the default behavior.
+			The optional {selectionModes} argument is one of:
+			- a single text object (such as "aw")
+			- motion (e.g. "$")
+			- |Funcref| (for a custom selection)
+			- /-delimited "/{pattern}/" (which selects the text
+			  region under / after the cursor that matches
+			  {pattern})
+			- List of
+			  [{begin-pattern}, {end-pattern}[, {match}[, {index}]]]
+			  or
+			  [[{begin-pattern}, {offset}],
+			   [{end-pattern}, {offset}]
+			   [, {match}[, {index}]]]
+			  which select [[{index}'d occurrence of] the
+			  {match}ed text inside] / full lines around the
+			  current position
+			- the string "lines", which represents the default
+			  behavior
 			If you pass a list of these, TextTransform tries each
 			selectionMode, one after the other, until one captures
 			non-empty text. For example, the passed list ['i"',
@@ -248,7 +263,7 @@ To uninstall, use the |:RmVimball| command.
 DEPENDENCIES					  *TextTransform-dependencies*
 
 - Requires Vim 7.0 or higher.
-- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.022 or
+- Requires the |ingo-library.vim| plugin (vimscript #4433), version 1.042 or
   higher.
 - repeat.vim (vimscript #2136) plugin (optional)
 - visualrepeat.vim (vimscript #3848) plugin (optional)
@@ -276,6 +291,16 @@ https://github.com/inkarkat/vim-TextTransform/issues or email (address below).
 
 ==============================================================================
 HISTORY						       *TextTransform-history*
+
+1.30	13-Nov-2024
+- ENH: Add range selectionMode that covers full lines between two patterns
+  around the cursor, optionally with offsets, optionally just a match inside
+  that range, optionally one indexed match.
+- ENH: Add g:TextTransformContext.triggerPos.
+- Mappings created through TextTransform#MakeMappings() now also abort on
+  error.
+- BUG: Correctly double special keys with non-alpha characters (like <C-]>).
+  *** You need to update to ingo-library (vimscript #4433) version 1.042! ***
 
 1.25	29-Mar-2019
 - Minor: Remove debugging output when a command transforms whole lines.
@@ -392,7 +417,7 @@ First published version.
 Started development.
 
 ==============================================================================
-Copyright: (C) 2011-2019 Ingo Karkat
+Copyright: (C) 2011-2024 Ingo Karkat
 The VIM LICENSE applies to this plugin; see |copyright|.
 
 Maintainer:	Ingo Karkat <ingo@karkat.de>

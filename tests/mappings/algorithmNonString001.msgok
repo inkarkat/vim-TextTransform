@@ -1,5 +1,7 @@
 Test: Dict
+
 TextTransform: unsupported algorithm result type: 4
 
 Test: Funcref
+
 TextTransform: unsupported algorithm result type: 2

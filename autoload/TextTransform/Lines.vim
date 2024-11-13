@@ -19,8 +19,9 @@ function! s:Transform( startLnum, endLnum, text, algorithm, isRepeat, arguments,
     let g:TextTransformContext = {
     \   'mapMode': 'c',
     \   'mode': 'V',
-    \   'startPos': [0, a:startLnum, 1, 0],
-    \   'endPos': [0, a:endLnum, 0x7FFFFFFF, 0],
+    \   'startPos': ingo#pos#Make4(a:startLnum, 1),
+    \   'endPos': ingo#pos#Make4(a:endLnum, 0x7FFFFFFF),
+    \   'triggerPos': getpos('.')[1:2],
     \   'arguments': a:arguments,
     \   'isBang': a:isBang,
     \   'register': a:register,
@@ -95,8 +96,7 @@ function! TextTransform#Lines#TransformCommand( startLnum, endLnum, isBang, regi
 	if l:modifiedLineCnt > 0
 	    " Set change marks to the first columns of the range, like
 	    " :substitute does.
-	    call setpos("'[", [0, l:startLnum, 1, 0])
-	    call setpos("']", [0, l:endLnum, 1, 0])
+	    call ingo#change#Set([l:startLnum, 1], [l:endLnum, 1])
 
 	    " Move the cursor to the first non-blank character of the last
 	    " modified line, like :substitute does.

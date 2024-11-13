@@ -3,7 +3,7 @@
 " DEPENDENCIES:
 "   - ingo-library.vim plugin
 "
-" Copyright: (C) 2011-2019 Ingo Karkat
+" Copyright: (C) 2011-2022 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "   Idea, design and implementation based on unimpaired.vim (vimscript #1590)
 "   by Tim Pope.
@@ -42,9 +42,10 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 
 
     " Repeat not defined in visual mode.
+    vnoremap <expr> <SID>TextTRecordPos TextTransform#Arbitrary#SetTriggerPos()
     let l:noopModificationCheck = 'call <SID>Before()<Bar>call setline(".", getline("."))<Bar>call <SID>After()<Bar>'
     for [l:mappingName, l:isRepeat] in [[l:mappingName, 0], [l:repeatMappingName, 1]]
-	execute printf('vnoremap <silent> %s <SID>%sVisual :<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s, %d)<CR>',
+	execute printf('vnoremap <silent> <script> %s <SID>%sVisual <SID>TextTRecordPos:<C-u>%scall TextTransform#Arbitrary#Visual(%s, %s, %d)<CR>',
 	\   a:mapArgs,
 	\   l:mappingName,
 	\   l:noopModificationCheck,
@@ -61,7 +62,7 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 	\   l:mappingName
 	\)
 
-	execute printf('nnoremap <silent> %s <Plug>%sLine :<C-u>%scall TextTransform#Arbitrary#Line(%s, %s, %s, %d)<CR>',
+	execute printf('nnoremap <silent> %s <Plug>%sLine :<C-u>%sif ! TextTransform#Arbitrary#Line(%s, %s, %s, %d)<Bar>echoerr ingo#err#Get()<Bar>endif<CR>',
 	\   a:mapArgs,
 	\   l:mappingName,
 	\   l:noopModificationCheck,
@@ -89,10 +90,11 @@ function! TextTransform#MakeMappings( mapArgs, key, algorithm, ... )
 
     let l:linePlugMappingName = l:plugMappingName . 'Line'
     if ! hasmapto(l:linePlugMappingName, 'n')
-	let l:doubledKey = matchstr(a:key, '\(<[[:alpha:]-]\+>\|.\)$')
+	let l:doubledKey = matchstr(a:key, '\(<[^[[:space:]>]\+>\|.\)$')
 	execute 'nmap' a:mapArgs a:key . l:doubledKey l:linePlugMappingName
     endif
 endfunction
+
 
 
 function! TextTransform#MakeCommand( commandOptions, commandName, algorithm, ... )
@@ -108,7 +110,7 @@ endfunction
 
 
 function! TextTransform#MakeSelectionCommand( commandOptions, commandName, algorithm, selectionModes )
-    execute printf('command -bar -bang -count %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <bang>0, <q-register>, <count>, %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
+    execute printf('command -bar -bang -range=-1 -nargs=* %s %s call <SID>Before() | call setline(<line1>, getline(<line1>)) | call <SID>After() | if ! TextTransform#Arbitrary#Command(<line1>, <line2>, <bang>0, <q-register>, (<count> == -1 ? <q-args> : <count>), %s, %s, <f-args>) | if <bang>1 || ingo#err#Get() !=# "Nothing transformed" | echoerr ingo#err#Get() | endif | endif',
     \	a:commandOptions,
     \	a:commandName,
     \	string(a:algorithm),
