@@ -3,6 +3,7 @@ if g:runVimTest =~# 'repeat\u'
     call vimtest#AddDependency('vim-repeat')
     call vimtest#AddDependency('vim-visualrepeat')
 endif
+call vimtest#AddDependency('vim-SidTools')  " for testing
 
 function! InsertExampleText( description, ... )
     call append(0, a:description)
