@@ -283,7 +283,7 @@ https://github.com/inkarkat/vim-TextTransform/issues or email (address below).
 HISTORY
 ------------------------------------------------------------------------------
 
-##### 1.30    RELEASEME
+##### 1.30    13-Nov-2024
 - ENH: Add range selectionMode that covers full lines between two patterns
   around the cursor, optionally with offsets, optionally just a match inside
   that range, optionally one indexed match.
@@ -411,7 +411,7 @@ gU, and because it makes much more sense.
 - Started development.
 
 ------------------------------------------------------------------------------
-Copyright: (C) 2011-2022 Ingo Karkat -
+Copyright: (C) 2011-2024 Ingo Karkat -
 The [VIM LICENSE](http://vimdoc.sourceforge.net/htmldoc/uganda.html#license) applies to this plugin.
 
 Maintainer:     Ingo Karkat &lt;ingo@karkat.de&gt;
